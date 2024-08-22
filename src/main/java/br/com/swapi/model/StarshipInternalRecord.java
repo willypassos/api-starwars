@@ -1,5 +1,7 @@
 package br.com.swapi.model;
 
+import org.bson.Document;
+
 public class StarshipInternalRecord {
     private String name;
     private String model;
@@ -11,10 +13,20 @@ public class StarshipInternalRecord {
     private String starshipClass;
     private boolean available;
 
-    public StarshipInternalRecord() {
-
+    // Construtor que corresponde à assinatura mencionada
+    public StarshipInternalRecord(String name, String model, String price, String crew, String cargo, String speed, int externalId, String starshipClass, boolean available) {
+        this.name = name;
+        this.model = model;
+        this.price = price;
+        this.crew = crew;
+        this.cargo = cargo;
+        this.speed = speed;
+        this.externalId = externalId;
+        this.starshipClass = starshipClass;
+        this.available = available;
     }
 
+    // Getters e Setters
     public String getName() {
         return name;
     }
@@ -82,22 +94,16 @@ public class StarshipInternalRecord {
     public boolean isAvailable() {
         return available;
     }
+    public static StarshipInternalRecord fromDocument(Document document) {
+        String name = document.getString("name");
+        int cargoCapacity = document.getInteger("cargoCapacity", 0);
+        String starshipClass = document.getString("starshipClass");
+        int maxSpeed = document.getInteger("maxSpeed", 0);
+
+        return new StarshipInternalRecord(name, starshipClass, Integer.toString(cargoCapacity), Integer.toString(maxSpeed), null, null, 0, starshipClass, true);
+    }
 
     public void setAvailable(boolean available) {
         this.available = available;
     }
-
-    public StarshipInternalRecord(String name, String model, String price, String crew, String cargo, String speed, int externalId, String starshipClass, boolean available) {
-        this.name = name;
-        this.model = model;
-        this.price = price;
-        this.crew = crew;
-        this.cargo = cargo;
-        this.speed = speed;
-        this.externalId = externalId;
-        this.starshipClass = starshipClass;
-        this.available = available;
-    }
-
-    // Getters e Setters
 }

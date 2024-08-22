@@ -57,6 +57,12 @@
             <artifactId>mongodb-driver-sync</artifactId>
             <version>4.6.0</version>
         </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>4.2.3</version>
+        </dependency>
+
 
     </dependencies>
 
