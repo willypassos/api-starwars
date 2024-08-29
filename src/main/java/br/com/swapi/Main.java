@@ -3,6 +3,7 @@ package br.com.swapi;
 import br.com.swapi.client.CrewHandler;
 import br.com.swapi.client.FleetHandler;
 import br.com.swapi.client.StarshipHandler;
+import br.com.swapi.repository.StarshipRepository;
 import br.com.swapi.service.*;
 import com.sun.net.httpserver.HttpServer;
 
@@ -16,9 +17,12 @@ public class Main {
         // Instanciando o SWAPIClient
         SWAPIClient swapiClient = new SWAPIClient();
 
+        // Instanciando o repositório
+        StarshipRepository starshipRepository = new StarshipRepository();
+
         // Instanciando os serviços usando as interfaces
         ICrewService crewService = new CrewService(swapiClient);
-        IStarshipService starshipService = new StarshipService(swapiClient);
+        IStarshipService starshipService = new StarshipService(swapiClient, starshipRepository);
         IFleetService fleetService = new FleetService(swapiClient);
 
         // Instanciando os handlers

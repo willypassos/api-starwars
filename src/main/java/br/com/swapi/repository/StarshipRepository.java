@@ -31,12 +31,17 @@ public class StarshipRepository {
         }
     }
 
-    public void saveStarship(String name, int cargoCapacity, String starshipClass, int maxSpeed) {
+    public void saveStarship(String name, String cargoCapacity, String starshipClass, String maxSpeed) {
         try {
+            // Remover a conversão para int, armazenar como String
             Document starship = new Document("name", name)
                     .append("cargoCapacity", cargoCapacity)
                     .append("starshipClass", starshipClass)
                     .append("maxSpeed", maxSpeed);
+
+            // Log para verificação do documento antes de salvar
+            logger.info("Tentando salvar nave: {}", starship.toJson());
+
             collection.insertOne(starship);
             jedis.set(name, starship.toJson());
             logger.info("Nave '{}' salva no MongoDB e cacheada no Redis", name);

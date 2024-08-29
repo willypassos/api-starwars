@@ -2,6 +2,7 @@ package br.com.swapi.client;
 
 import br.com.swapi.model.StarshipInternalRecord;
 import br.com.swapi.service.IStarshipService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -12,9 +13,11 @@ import java.util.Map;
 
 public class StarshipHandler implements HttpHandler {
     private final IStarshipService starshipService;
+    private final ObjectMapper objectMapper;
 
     public StarshipHandler(IStarshipService starshipService) {
         this.starshipService = starshipService;
+        this.objectMapper = new ObjectMapper(); // Instanciando o ObjectMapper para serialização JSON
     }
 
     @Override
@@ -28,7 +31,7 @@ public class StarshipHandler implements HttpHandler {
 
             List<StarshipInternalRecord> starshipRecords = starshipService.getStarshipByPage(page, name);
 
-            String jsonResponse = convertToJson(starshipRecords);
+            String jsonResponse = objectMapper.writeValueAsString(starshipRecords); // Usando Jackson para converter a lista em JSON
 
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, jsonResponse.getBytes().length);
@@ -40,30 +43,6 @@ public class StarshipHandler implements HttpHandler {
         } catch (Exception e) {
             handleError(exchange, "Internal Server Error: " + e.getMessage(), 500);
         }
-    }
-
-    private String convertToJson(List<StarshipInternalRecord> starshipRecords) {
-        StringBuilder jsonBuilder = new StringBuilder();
-        jsonBuilder.append("[");
-        for (int i = 0; i < starshipRecords.size(); i++) {
-            StarshipInternalRecord record = starshipRecords.get(i);
-            jsonBuilder.append("{")
-                    .append("\"name\":\"").append(record.getName()).append("\",")
-                    .append("\"model\":\"").append(record.getModel()).append("\",")
-                    .append("\"price\":\"").append(record.getPrice()).append("\",")
-                    .append("\"crew\":\"").append(record.getCrew()).append("\",")
-                    .append("\"cargo\":\"").append(record.getCargo()).append("\",")
-                    .append("\"speed\":\"").append(record.getSpeed()).append("\",")
-                    .append("\"starship_class\":\"").append(record.getStarshipClass()).append("\",")
-                    .append("\"external_id\":").append(record.getExternalId()).append(",")
-                    .append("\"available\":").append(record.isAvailable())
-                    .append("}");
-            if (i < starshipRecords.size() - 1) {
-                jsonBuilder.append(",");
-            }
-        }
-        jsonBuilder.append("]");
-        return jsonBuilder.toString();
     }
 
     // Método auxiliar para analisar a query string e extrair os parâmetros
