@@ -1,6 +1,7 @@
 package br.com.swapi.service;
 
-import br.com.swapi.model.FleetRecord;
+import br.com.swapi.model.CrewRecord;
+import br.com.swapi.model.StarshipInternalRecord;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,8 +22,32 @@ public class SWAPIClient {
         this.objectMapper = new ObjectMapper();
     }
 
-    public List<FleetRecord> getFleet(int page, String name) throws IOException {
-        String endpoint = "/fleet/?page=" + page;
+    // Método para buscar tripulações
+    public List<CrewRecord> getCrew(int page, String name) throws IOException {
+        String endpoint = "/people/?page=" + page; // Endpoint da SWAPI
+        if (name != null && !name.isEmpty()) { // Verifica se o nome foi informado
+            endpoint += "&name=" + name; // Acrescenta o nome na URL
+        }
+
+        String response = fetchData(endpoint); // Faz a requisição
+        if (response == null || response.isEmpty()) { // Verifica se a resposta é vazia
+            return new ArrayList<>(); // Caso seja, retorna uma lista vazia
+        }
+
+        JsonNode rootNode = objectMapper.readTree(response); // Cria um objeto JsonNode a partir da resposta
+        JsonNode results = rootNode.get("results"); // Pega os resultados da resposta
+
+        List<CrewRecord> crewMembers = new ArrayList<>(); // Cria uma lista vazia para armazenar os tripulantes
+        for (JsonNode crewJson : results) { // Percorre todos os tripulantes na resposta
+            CrewRecord crew = objectMapper.treeToValue(crewJson, CrewRecord.class); // Cria um objeto CrewRecord a partir do JSON
+            crewMembers.add(crew); //
+        }
+        return crewMembers;
+    }
+
+    // Método para buscar naves
+    public List<StarshipInternalRecord> getStarships(int page, String name) throws IOException {
+        String endpoint = "/starships/?page=" + page;
         if (name != null && !name.isEmpty()) {
             endpoint += "&name=" + name;
         }
@@ -35,12 +60,12 @@ public class SWAPIClient {
         JsonNode rootNode = objectMapper.readTree(response);
         JsonNode results = rootNode.get("results");
 
-        List<FleetRecord> fleets = new ArrayList<>();
-        for (JsonNode fleetJson : results) {
-            FleetRecord fleet = objectMapper.treeToValue(fleetJson, FleetRecord.class);
-            fleets.add(fleet);
+        List<StarshipInternalRecord> starships = new ArrayList<>();
+        for (JsonNode starshipJson : results) {
+            StarshipInternalRecord starship = objectMapper.treeToValue(starshipJson, StarshipInternalRecord.class);
+            starships.add(starship);
         }
-        return fleets;
+        return starships;
     }
 
     // Método genérico para fazer requisições HTTP

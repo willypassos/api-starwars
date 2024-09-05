@@ -11,17 +11,17 @@ public class StarshipMapper {
      * @param starshipJson O JsonNode que representa os dados da nave espacial.
      * @return Um objeto StarshipInternalRecord com os dados mapeados.
      */
-    public StarshipInternalRecord mapToStarship(JsonNode starshipJson) {
+    public StarshipInternalRecord mapStarshipFromJson(JsonNode starshipJson, boolean available) {
         return new StarshipInternalRecord(
-                starshipJson.get("name").asText(""),
-                starshipJson.get("model").asText(""),
-                starshipJson.get("cost_in_credits").asText(""),
-                starshipJson.get("crew").asText(""),
-                starshipJson.get("cargo_capacity").asText(""),
-                starshipJson.get("max_atmosphering_speed").asText(""),
-                extractIdFromUrl(starshipJson.get("url").asText()), // external_id mapeado a partir da URL
-                starshipJson.get("starship_class").asText(""),
-                true // Disponibilidade será verificada na lógica da aplicação
+                starshipJson.has("name") ? starshipJson.get("name").asText("") : "",  // Nome da nave espacial
+                starshipJson.has("model") ? starshipJson.get("model").asText("") : "",  // Modelo da nave
+                starshipJson.has("cost_in_credits") ? starshipJson.get("cost_in_credits").asText("") : "",  // Custo em créditos
+                starshipJson.has("crew") ? starshipJson.get("crew").asText("") : "",  // Tamanho da tripulação
+                starshipJson.has("cargo_capacity") ? starshipJson.get("cargo_capacity").asText("") : "",  // Capacidade de carga
+                starshipJson.has("max_atmosphering_speed") ? starshipJson.get("max_atmosphering_speed").asText("") : "",  // Velocidade máxima
+                extractIdFromUrl(starshipJson.has("url") ? starshipJson.get("url").asText("") : ""),  // ID extraído da URL
+                starshipJson.has("starship_class") ? starshipJson.get("starship_class").asText("") : "",  // Classe da nave
+                available  // Disponibilidade passada dinamicamente
         );
     }
 
@@ -32,7 +32,12 @@ public class StarshipMapper {
      * @return O identificador único extraído da URL.
      */
     private int extractIdFromUrl(String url) {
-        String[] parts = url.split("/");
-        return Integer.parseInt(parts[parts.length - 1]);
+        try {
+            String[] parts = url.split("/");
+            return Integer.parseInt(parts[parts.length - 1]);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            // Tratamento de erro caso o ID não possa ser extraído corretamente
+            return -1;  // Retorna um valor inválido ou lança uma exceção personalizada
+        }
     }
 }

@@ -13,8 +13,8 @@ public class StarshipInternalRecord {
     private String starshipClass;
     private boolean available;
 
-    // Construtor que corresponde à assinatura mencionada
-    public StarshipInternalRecord(String name, String model, String price, String crew, String cargo, String speed, int externalId, String starshipClass, boolean available) {
+    public StarshipInternalRecord(String name, String model, String price, String crew, String cargo, String speed,
+                                  int externalId, String starshipClass, boolean available) {
         this.name = name;
         this.model = model;
         this.price = price;
@@ -26,84 +26,65 @@ public class StarshipInternalRecord {
         this.available = available;
     }
 
-    // Getters e Setters
-    public String getName() {
-        return name;
+    public static StarshipInternalRecord fromDocument(Document doc) {
+        return new StarshipInternalRecord(
+                doc.getString("name"),
+                doc.getString("model"),
+                doc.getString("price"),
+                doc.getString("crew"),
+                doc.getString("cargo"),
+                doc.getString("speed"),
+                doc.getInteger("externalId"),
+                doc.getString("starshipClass"),
+                doc.getBoolean("available")
+        );
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public Document toDocument() {
+        return new Document("name", name)
+                .append("model", model)
+                .append("price", price)
+                .append("crew", crew)
+                .append("cargo", cargo)
+                .append("speed", speed)
+                .append("externalId", externalId)
+                .append("starshipClass", starshipClass)
+                .append("available", available);
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getModel() {
         return model;
     }
 
-    public void setModel(String model) {
-        this.model = model;
-    }
-
     public String getPrice() {
         return price;
-    }
-
-    public void setPrice(String price) {
-        this.price = price;
     }
 
     public String getCrew() {
         return crew;
     }
 
-    public void setCrew(String crew) {
-        this.crew = crew;
-    }
-
     public String getCargo() {
         return cargo;
-    }
-
-    public void setCargo(String cargo) {
-        this.cargo = cargo;
     }
 
     public String getSpeed() {
         return speed;
     }
 
-    public void setSpeed(String speed) {
-        this.speed = speed;
-    }
-
     public int getExternalId() {
         return externalId;
-    }
-
-    public void setExternalId(int externalId) {
-        this.externalId = externalId;
     }
 
     public String getStarshipClass() {
         return starshipClass;
     }
 
-    public void setStarshipClass(String starshipClass) {
-        this.starshipClass = starshipClass;
-    }
-
     public boolean isAvailable() {
         return available;
-    }
-    public static StarshipInternalRecord fromDocument(Document document) {
-        String name = document.getString("name");
-        int cargoCapacity = document.getInteger("cargoCapacity", 0);
-        String starshipClass = document.getString("starshipClass");
-        int maxSpeed = document.getInteger("maxSpeed", 0);
-
-        return new StarshipInternalRecord(name, starshipClass, Integer.toString(cargoCapacity), Integer.toString(maxSpeed), null, null, 0, starshipClass, true);
-    }
-
-    public void setAvailable(boolean available) {
-        this.available = available;
     }
 }

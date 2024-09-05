@@ -1,5 +1,7 @@
 package br.com.swapi.model;
 
+import org.bson.Document;
+
 public class CrewRecord {
     private String name;
     private String height;
@@ -7,8 +9,6 @@ public class CrewRecord {
     private String gender;
     private boolean available;
     private int externalId;
-
-    public CrewRecord() {}
 
     public CrewRecord(String name, String height, String mass, String gender, boolean available, int externalId) {
         this.name = name;
@@ -18,10 +18,6 @@ public class CrewRecord {
         this.available = available;
         this.externalId = externalId;
     }
-
-    public CrewRecord(String name, String birthYear, String eyeColor, String gender, String hairColor, Integer height, Integer mass, String skinColor, Integer homeworld, Object o) {
-    }
-
 
     public String getName() {
         return name;
@@ -69,5 +65,27 @@ public class CrewRecord {
 
     public void setExternalId(int externalId) {
         this.externalId = externalId;
+    }
+
+    // Método para converter para Document do MongoDB
+    public Document toDocument() {
+        return new Document("name", name)
+                .append("height", height)
+                .append("mass", mass)
+                .append("gender", gender)
+                .append("available", available)
+                .append("externalId", externalId);
+    }
+
+    // Método para criar CrewRecord a partir de Document do MongoDB
+    public static CrewRecord fromDocument(Document doc) {
+        return new CrewRecord(
+                doc.getString("name"),
+                doc.getString("height"),
+                doc.getString("mass"),
+                doc.getString("gender"),
+                doc.getBoolean("available"),
+                doc.getInteger("externalId")
+        );
     }
 }

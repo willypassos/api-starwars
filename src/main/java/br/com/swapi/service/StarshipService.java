@@ -4,6 +4,7 @@ import br.com.swapi.model.StarshipInternalRecord;
 import br.com.swapi.repository.StarshipRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bson.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,11 +14,12 @@ public class StarshipService implements IStarshipService {
 
     private final SWAPIClient swapiClient;
     private final StarshipRepository starshipRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public StarshipService(SWAPIClient swapiClient, StarshipRepository starshipRepository) {
         this.swapiClient = swapiClient;
         this.starshipRepository = starshipRepository;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -25,6 +27,7 @@ public class StarshipService implements IStarshipService {
         List<StarshipInternalRecord> starships = new ArrayList<>();
 
         if (name != null && !name.isEmpty()) {
+            // Verificar no banco de dados
             StarshipInternalRecord starship = starshipRepository.findStarshipByName(name);
             if (starship != null) {
                 starships.add(starship);
@@ -32,24 +35,22 @@ public class StarshipService implements IStarshipService {
             }
         }
 
+        // Consulta a SWAPI
         String endpoint = "/starships/?page=" + page;
         String response = swapiClient.fetchData(endpoint);
         starships = parseStarships(response);
 
-        // Salvar as naves no banco e cache
+        // Salvar as naves no banco
         for (StarshipInternalRecord starship : starships) {
-            starshipRepository.saveStarship(
-                    starship.getName(),
-                    starship.getCargo(),
-                    starship.getStarshipClass(),
-                    starship.getSpeed()
-            );
+            if (starshipRepository.findStarshipByName(starship.getName()) == null) {
+                starshipRepository.saveStarship(starship);
+            }
         }
 
         return filterStarshipsByName(starships, name);
     }
 
-
+    // Método que processa os dados da API e converte em objetos
     private List<StarshipInternalRecord> parseStarships(String json) throws IOException {
         JsonNode rootNode = objectMapper.readTree(json);
         JsonNode results = rootNode.get("results");
@@ -59,7 +60,7 @@ public class StarshipService implements IStarshipService {
             for (JsonNode starshipJson : results) {
                 int externalId = extractIdFromUrl(starshipJson.get("url").asText());
                 if (externalId < 1) {
-                    continue; // Pula registros inválidos
+                    continue;
                 }
 
                 String name = starshipJson.get("name").asText();
@@ -80,9 +81,10 @@ public class StarshipService implements IStarshipService {
         return starshipList;
     }
 
+    // Filtro para buscar naves pelo nome
     private List<StarshipInternalRecord> filterStarshipsByName(List<StarshipInternalRecord> starships, String name) {
         if (name == null || name.isEmpty()) {
-            return starships; // Se o nome não for fornecido, retorne a lista completa
+            return starships;
         }
         List<StarshipInternalRecord> filteredStarships = new ArrayList<>();
         for (StarshipInternalRecord starship : starships) {
@@ -93,11 +95,13 @@ public class StarshipService implements IStarshipService {
         return filteredStarships;
     }
 
+    // Método auxiliar para extrair o ID de uma URL
     private int extractIdFromUrl(String url) {
         String[] parts = url.split("/");
         return Integer.parseInt(parts[parts.length - 1]);
     }
 
+    // Método para verificar se a nave já está disponível
     private boolean checkAvailability(int externalId, String name) {
         StarshipInternalRecord starship = starshipRepository.findStarshipByName(name);
         return starship == null;
