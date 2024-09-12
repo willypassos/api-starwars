@@ -1,47 +1,85 @@
 package br.com.swapi.mapper;
 
-import br.com.swapi.model.CrewRecordFleet;
 import br.com.swapi.model.FleetRecord;
+import br.com.swapi.model.CrewRecordFleet;
 import br.com.swapi.model.StarshipInternalRecordFleet;
-import com.fasterxml.jackson.databind.JsonNode;
+import org.bson.Document;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FleetMapper {
 
-    private final CrewMapper crewMapper = new CrewMapper();
-    private final StarshipMapper starshipMapper = new StarshipMapper();
+    // Mapeia um FleetRecord para um Document do MongoDB
+    public Document mapToFleetDocument(FleetRecord fleet) {
+        List<Document> crewDocs = fleet.getCrew().stream()
+                .map(this::mapCrewToDocument)
+                .collect(Collectors.toList());
 
-    /**
-     * Mapeia os dados da requisição JSON para um objeto FleetRecord.
-     *
-     * @param fleetJson O JsonNode que representa os dados da frota.
-     * @param crewList A lista de objetos CrewRecordFleet representando a tripulação.
-     * @param starship O objeto StarshipInternalRecordFleet representando a nave.
-     * @return Um objeto FleetRecord com os dados mapeados.
-     */
-    public FleetRecord mapToFleet(JsonNode fleetJson, List<CrewRecordFleet> crewList, StarshipInternalRecordFleet starship) {
+        Document starshipDoc = mapStarshipToDocument(fleet.getStarship());
+
+        return new Document("name", fleet.getName())
+                .append("crew", crewDocs)
+                .append("starship", starshipDoc);
+    }
+
+    // Mapeia um Document do MongoDB para um FleetRecord
+    public FleetRecord mapToFleetRecord(Document doc) {
+        List<CrewRecordFleet> crew = ((List<Document>) doc.get("crew")).stream()
+                .map(this::mapDocumentToCrew)
+                .collect(Collectors.toList());
+
+        StarshipInternalRecordFleet starship = mapDocumentToStarship((Document) doc.get("starship"));
+
         return new FleetRecord(
-                fleetJson.get("name").asText(""),
-                crewList,
-                starship
+                doc.getString("name"),
+                starship,
+                crew
         );
     }
 
-    /**
-     * Mapeia os dados da frota a partir de IDs de tripulação e nave.
-     *
-     * @param name O nome da frota.
-//     * @param crewIds A lista de IDs dos membros da tripulação.
-//     * @param starshipId O ID da nave.
-     * @return Um objeto FleetRecord com os dados mapeados.
-     */
-    public FleetRecord mapToFleet(String name, List<CrewRecordFleet> crewList, StarshipInternalRecordFleet starship) {
-        return new FleetRecord(
-                name,
-                crewList,
-                starship
+    // Mapeia um CrewRecordFleet para um Document MongoDB
+    private Document mapCrewToDocument(CrewRecordFleet crew) {
+        return new Document("external_id", crew.getExternalId())
+                .append("name", crew.getName())
+                .append("height", crew.getHeight())
+                .append("mass", crew.getMass())
+                .append("gender", crew.getGender());
+    }
 
+    // Mapeia um Document MongoDB para um CrewRecordFleet
+    private CrewRecordFleet mapDocumentToCrew(Document doc) {
+        boolean available = doc.getBoolean("available");
+        return new CrewRecordFleet(
+                doc.getString("name"),
+                doc.getString("height"),
+                doc.getString("mass"),
+                doc.getString("gender"),
+                doc.getInteger("external_id"),
+                available  // Verifica a disponibilidade do tripulante
         );
     }
+
+    // Mapeia um StarshipInternalRecordFleet para um Document MongoDB
+    private Document mapStarshipToDocument(StarshipInternalRecordFleet starship) {
+        return new Document("external_id", starship.getExternal_id())
+                .append("name", starship.getName())
+                .append("model", starship.getModel());
+    }
+
+    // Mapeia um Document MongoDB para um StarshipInternalRecordFleet
+    private StarshipInternalRecordFleet mapDocumentToStarship(Document doc) {
+        return new StarshipInternalRecordFleet(
+                doc.getString("name"),
+                doc.getString("model"),
+                doc.getString("price"),
+                doc.getString("crew"),
+                doc.getString("cargo"),
+                doc.getString("speed"),
+                doc.getInteger("external_id"),
+                doc.getString("starship_class"),
+                doc.getBoolean("available")  // Inclui o campo available
+        );
+    }
+
 }

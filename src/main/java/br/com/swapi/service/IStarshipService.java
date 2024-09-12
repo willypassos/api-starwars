@@ -1,10 +1,11 @@
 package br.com.swapi.service;
 
-import br.com.swapi.model.StarshipInternalRecord;
-
+import br.com.swapi.model.StarshipInternalRecordFleet;
 import java.io.IOException;
 import java.util.List;
 
 public interface IStarshipService {
-    List<StarshipInternalRecord> getStarshipByPage(int page, String name) throws IOException;
+
+    // Método conforme o operationId do Swagger: getStarshipByPage
+    List<StarshipInternalRecordFleet> getStarshipByPage(int page, String name) throws IOException;
 }

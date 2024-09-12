@@ -1,7 +1,7 @@
 package br.com.swapi.service;
 
-import br.com.swapi.model.CrewRecord;
-import br.com.swapi.model.StarshipInternalRecord;
+import br.com.swapi.model.CrewRecordFleet;
+import br.com.swapi.model.StarshipInternalRecordFleet;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -22,47 +22,47 @@ public class SWAPIClient {
         this.objectMapper = new ObjectMapper();
     }
 
-    // Método para buscar tripulações
-    public List<CrewRecord> getCrew(int page, String name) throws IOException {
-        String endpoint = "/people/?page=" + page; // Endpoint da SWAPI
-        if (name != null && !name.isEmpty()) { // Verifica se o nome foi informado
-            endpoint += "&name=" + name; // Acrescenta o nome na URL
+    // Método para buscar tripulações (CrewRecordFleet)
+    public List<CrewRecordFleet> getCrew(int page, String name) throws IOException {
+        String endpoint = "/people/?page=" + page;  // Endpoint da SWAPI para personagens
+        if (name != null && !name.isEmpty()) {
+            endpoint += "&search=" + name;  // Acrescenta o nome no endpoint para filtrar por nome
         }
 
-        String response = fetchData(endpoint); // Faz a requisição
-        if (response == null || response.isEmpty()) { // Verifica se a resposta é vazia
-            return new ArrayList<>(); // Caso seja, retorna uma lista vazia
+        String response = fetchData(endpoint);  // Faz a requisição
+        if (response == null || response.isEmpty()) {
+            return new ArrayList<>();  // Retorna uma lista vazia se não houver dados
         }
 
-        JsonNode rootNode = objectMapper.readTree(response); // Cria um objeto JsonNode a partir da resposta
-        JsonNode results = rootNode.get("results"); // Pega os resultados da resposta
+        JsonNode rootNode = objectMapper.readTree(response);  // Converte a resposta para JSON
+        JsonNode results = rootNode.get("results");
 
-        List<CrewRecord> crewMembers = new ArrayList<>(); // Cria uma lista vazia para armazenar os tripulantes
-        for (JsonNode crewJson : results) { // Percorre todos os tripulantes na resposta
-            CrewRecord crew = objectMapper.treeToValue(crewJson, CrewRecord.class); // Cria um objeto CrewRecord a partir do JSON
-            crewMembers.add(crew); //
+        List<CrewRecordFleet> crewMembers = new ArrayList<>();  // Lista para armazenar os tripulantes
+        for (JsonNode crewJson : results) {
+            CrewRecordFleet crew = mapToCrewRecordFleet(crewJson);  // Converte cada JSON para CrewRecordFleet
+            crewMembers.add(crew);
         }
         return crewMembers;
     }
 
-    // Método para buscar naves
-    public List<StarshipInternalRecord> getStarships(int page, String name) throws IOException {
-        String endpoint = "/starships/?page=" + page;
+    // Método para buscar naves (StarshipInternalRecordFleet)
+    public List<StarshipInternalRecordFleet> getStarships(int page, String name) throws IOException {
+        String endpoint = "/starships/?page=" + page;  // Endpoint da SWAPI para naves
         if (name != null && !name.isEmpty()) {
-            endpoint += "&name=" + name;
+            endpoint += "&search=" + name;  // Acrescenta o nome no endpoint para filtrar por nome
         }
 
-        String response = fetchData(endpoint);
+        String response = fetchData(endpoint);  // Faz a requisição
         if (response == null || response.isEmpty()) {
-            return new ArrayList<>();
+            return new ArrayList<>();  // Retorna uma lista vazia se não houver dados
         }
 
-        JsonNode rootNode = objectMapper.readTree(response);
+        JsonNode rootNode = objectMapper.readTree(response);  // Converte a resposta para JSON
         JsonNode results = rootNode.get("results");
 
-        List<StarshipInternalRecord> starships = new ArrayList<>();
+        List<StarshipInternalRecordFleet> starships = new ArrayList<>();  // Lista para armazenar as naves
         for (JsonNode starshipJson : results) {
-            StarshipInternalRecord starship = objectMapper.treeToValue(starshipJson, StarshipInternalRecord.class);
+            StarshipInternalRecordFleet starship = mapToStarshipInternalRecordFleet(starshipJson);  // Converte cada JSON para StarshipInternalRecordFleet
             starships.add(starship);
         }
         return starships;
@@ -87,9 +87,42 @@ public class SWAPIClient {
                 }
             }
             conn.disconnect();
-            return content.toString();
+            return content.toString();  // Retorna o conteúdo da resposta
         } else {
             throw new IOException("Failed to connect to SWAPI: Response code " + responseCode);
         }
+    }
+
+    // Método auxiliar para mapear JSON para CrewRecordFleet
+    private CrewRecordFleet mapToCrewRecordFleet(JsonNode crewJson) {
+        return new CrewRecordFleet(
+                crewJson.get("name").asText(),
+                crewJson.get("height").asText(),
+                crewJson.get("mass").asText(),
+                crewJson.get("gender").asText(),
+                extractIdFromUrl(crewJson.get("url").asText()),  // Extrai o external_id a partir da URL
+                true  // Supondo que o tripulante está disponível
+        );
+    }
+
+    // Método auxiliar para mapear JSON para StarshipInternalRecordFleet
+    private StarshipInternalRecordFleet mapToStarshipInternalRecordFleet(JsonNode starshipJson) {
+        return new StarshipInternalRecordFleet(
+                starshipJson.get("name").asText(),
+                starshipJson.get("model").asText(),
+                starshipJson.get("cost_in_credits").asText(),
+                starshipJson.get("crew").asText(),
+                starshipJson.get("cargo_capacity").asText(),
+                starshipJson.get("max_atmosphering_speed").asText(),
+                extractIdFromUrl(starshipJson.get("url").asText()),  // Extrai o external_id a partir da URL
+                starshipJson.get("starship_class").asText(),
+                true  // Supondo que a nave está disponível
+        );
+    }
+
+    // Método auxiliar para extrair o ID da URL
+    private int extractIdFromUrl(String url) {
+        String[] parts = url.split("/");
+        return Integer.parseInt(parts[parts.length - 1]);  // Extrai o último valor da URL como o ID
     }
 }

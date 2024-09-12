@@ -2,13 +2,11 @@ package br.com.swapi;
 
 import br.com.swapi.client.CrewHandler;
 import br.com.swapi.client.StarshipHandler;
+import br.com.swapi.client.FleetHandler;
 import br.com.swapi.config.MongoDBConfig;
-import br.com.swapi.repository.CrewRepository;
-import br.com.swapi.repository.StarshipRepository;
-import br.com.swapi.service.CrewService;
-import br.com.swapi.service.IStarshipService;
-import br.com.swapi.service.SWAPIClient;
-import br.com.swapi.service.StarshipService;
+import br.com.swapi.repository.FleetRepository;
+import br.com.swapi.service.*;
+
 import com.mongodb.client.MongoDatabase;
 import com.sun.net.httpserver.HttpServer;
 
@@ -17,6 +15,7 @@ import java.net.InetSocketAddress;
 public class Main {
 
     public static void main(String[] args) throws Exception {
+        // Criando o servidor na porta 8080
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
         // Instanciando o SWAPIClient
@@ -25,25 +24,27 @@ public class Main {
         // Instanciando o MongoDB Database
         MongoDatabase mongoDatabase = MongoDBConfig.getDatabase();
 
-        // Instanciando os repositórios
-        StarshipRepository starshipRepository = new StarshipRepository();
-        CrewRepository crewRepository = new CrewRepository();
+        // Instanciando o repositório do Fleet
+        FleetRepository fleetRepository = new FleetRepository();
 
-        // Instanciando os serviços usando as interfaces
-        IStarshipService starshipService = new StarshipService(swapiClient, starshipRepository);
-        CrewService crewService = new CrewService(swapiClient, crewRepository);
+        // Instanciando os serviços
+        IStarshipService starshipService = new StarshipService();
+        ICrewService crewService = new CrewService();
+        IFleetService fleetService = new FleetService();
 
         // Instanciando os handlers
         CrewHandler crewHandler = new CrewHandler(crewService);
         StarshipHandler starshipHandler = new StarshipHandler(starshipService);
+        FleetHandler fleetHandler = new FleetHandler(fleetService);
 
         // Configuração dos contextos (rotas) para os handlers
         server.createContext("/starwars/v1/crew", crewHandler);
         server.createContext("/starwars/v1/starship", starshipHandler);
-//        server.createContext("/starwars/v1/fleet", fleetHandler);
+        server.createContext("/starwars/v1/fleet", fleetHandler);  // Rota para Fleet
 
-        server.setExecutor(null); // Define o executor do servidor
-        server.start(); // Inicia o servidor
+        // Definindo o executor e iniciando o servidor
+        server.setExecutor(null);  // Usa o executor padrão
+        server.start();
 
         System.out.println("Servidor rodando em http://localhost:8080/starwars/v1");
     }

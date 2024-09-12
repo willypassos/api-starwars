@@ -1,14 +1,12 @@
 package br.com.swapi.service;
 
-import br.com.swapi.model.CrewRecordFleet;
 import br.com.swapi.model.FleetRecord;
-import br.com.swapi.model.StarshipInternalRecordFleet;
-
-import java.io.IOException;
+import br.com.swapi.model.FleetRecordRequestBody;
 import java.util.List;
 
 public interface IFleetService {
-    List<FleetRecord> getFleet(int page, String name) throws IOException;
-    FleetRecord createFleet(String name, List<CrewRecordFleet> crewList, StarshipInternalRecordFleet starship);
-
+    FleetRecord postFleet(FleetRecordRequestBody fleet) throws Exception;
+    FleetRecord updateFleet(String name, List<Integer> crewIds) throws Exception;
+    void deleteFleet(String name);
+    List<FleetRecord> getFleet(Integer page, String name);
 }

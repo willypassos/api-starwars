@@ -1,22 +1,24 @@
 package br.com.swapi.model;
 
-import org.bson.Document;
-
 public class CrewRecordFleet {
     private String name;
     private String height;
     private String mass;
     private String gender;
     private int externalId;
+    private boolean available;  // Adicionando o campo 'available'
 
-    public CrewRecordFleet(String name, String height, String mass, String gender, int externalId) {
+    // Construtor com todos os parâmetros
+    public CrewRecordFleet(String name, String height, String mass, String gender, int externalId, boolean available) {
         this.name = name;
         this.height = height;
         this.mass = mass;
         this.gender = gender;
         this.externalId = externalId;
+        this.available = available;
     }
 
+    // Getters e Setters
     public String getName() {
         return name;
     }
@@ -57,23 +59,11 @@ public class CrewRecordFleet {
         this.externalId = externalId;
     }
 
-    // Método para converter para Document do MongoDB
-    public Document toDocument() {
-        return new Document("name", name)
-                .append("height", height)
-                .append("mass", mass)
-                .append("gender", gender)
-                .append("externalId", externalId);
+    public boolean isAvailable() {
+        return available;  // Método isAvailable para verificar a disponibilidade
     }
 
-    // Método para criar CrewRecordFleet a partir de Document do MongoDB
-    public static CrewRecordFleet fromDocument(Document doc) {
-        return new CrewRecordFleet(
-                doc.getString("name"),
-                doc.getString("height"),
-                doc.getString("mass"),
-                doc.getString("gender"),
-                doc.getInteger("externalId")
-        );
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 }
