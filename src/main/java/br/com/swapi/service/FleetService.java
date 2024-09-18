@@ -20,10 +20,19 @@ public class FleetService implements IFleetService {
             throw new Exception("Já existe uma frota com esse nome."); // Caso exista, lança uma exceção
         }
 
+        // Verifica se algum membro da tripulação já está em uso
+        List<Integer> crewInUse = fleetRequest.getCrewIds().stream()
+                .filter(crewId -> isCrewInUse(crewId, fleetRequest.getName())) // Verifica se o membro já está em uso
+                .collect(Collectors.toList());
+
+        if (!crewInUse.isEmpty()) {
+            throw new Exception("Os seguintes membros da tripulação já estão em uso: " + crewInUse); // Lança uma exceção com todos os IDs em uso
+        }
+
         // Verifica se os IDs da tripulação existem na SWAPI
         List<CrewRecordFleet> crew = swapiClient.getCrew(1, null) // Busca os tripulantes da SWAPI
                 .stream() // Transforma os dados em Stream
-                .filter(crewRecord -> fleetRequest.getCrewIds().contains(crewRecord.getExternalId())) // Filtra pelos IDs da tripulacao
+                .filter(crewRecord -> fleetRequest.getCrewIds().contains(crewRecord.getExternalId())) // Filtra pelos IDs da tripulação
                 .collect(Collectors.toList()); // Transforma em uma lista
 
         // Valida o número de tripulantes
@@ -48,6 +57,7 @@ public class FleetService implements IFleetService {
 
         return fleet; // Retorna a frota
     }
+
 
 
 
@@ -88,21 +98,23 @@ public class FleetService implements IFleetService {
         // Verifica se os IDs da tripulação existem na SWAPI e se estão disponíveis
         List<CrewRecordFleet> updatedCrew = swapiClient.getCrew(1, null) // Busca os tripulantes da SWAPI
                 .stream()
-                .filter(crewRecord -> crewIds.contains(crewRecord.getExternalId())) // Filtra pelos IDs da tripulacao
+                .filter(crewRecord -> crewIds.contains(crewRecord.getExternalId())) // Filtra pelos IDs da tripulação
                 .collect(Collectors.toList()); // Transforma em uma lista
 
         // Valida o número de tripulantes
         validateCrewSize(updatedCrew); // Verifica se a tripulação possui entre 1 e 5 membros
 
-        if (updatedCrew.size() != crewIds.size()) { // Verifica se todos os IDs da tripulacao existem
+        if (updatedCrew.size() != crewIds.size()) { // Verifica se todos os IDs da tripulação existem
             throw new Exception("Alguns membros da tripulação não foram encontrados na API externa."); // Caso não existam, lança uma exceção
         }
 
         // Verifica se algum dos novos crewIds já está em uso em outra frota
-        for (CrewRecordFleet crew : updatedCrew) {
-            if (isCrewInUse(crew.getExternalId(), name)) { // Verifica excluindo a frota atual
-                throw new Exception("Crew member with ID " + crew.getExternalId() + " está atualmente sendo utilizado."); // Caso esteja em uso, lança uma exceção
-            }
+        List<Integer> crewInUse = crewIds.stream()
+                .filter(crewId -> isCrewInUse(crewId, name)) // Verifica excluindo a frota atual
+                .collect(Collectors.toList());
+
+        if (!crewInUse.isEmpty()) {
+            throw new Exception("Os seguintes membros da tripulação já estão em uso: " + crewInUse); // Lança exceção com os IDs em uso
         }
 
         // Atualiza a frota com os novos dados
@@ -114,16 +126,13 @@ public class FleetService implements IFleetService {
         return existingFleet; // Retorna a frota atualizada
     }
 
-
-
     // Verifica se um tripulante está em uso em outra frota
     private boolean isCrewInUse(int crewId, String currentFleetName) {
-        return fleetRepository.findAll().stream()// Busca todas as frota
-                .filter(fleet -> !fleet.getName().equals(currentFleetName)) // Exclui a frota atual da verificação,para evitar falsa identificação.
-                .flatMap(fleet -> fleet.getCrew().stream()) // Busca os tripulantes de cada frota
-                .anyMatch(crew -> crew.getExternalId() == crewId); // Verifica se algum tripulante da frota atual tem o ID informado
+        return fleetRepository.findAll().stream()// Busca todas as frotas
+                .filter(fleet -> !fleet.getName().equals(currentFleetName)) // Exclui a frota atual da verificação
+                .flatMap(fleet -> fleet.getCrew().stream())// Busca os tripulantes da frota
+                .anyMatch(crew -> crew.getExternalId() == crewId); // Verifica se o tripulante está em uso
     }
-
     private void validateCrewSize(List<CrewRecordFleet> crew) throws Exception {
         if (crew.size() < 1 || crew.size() > 5) {
             throw new Exception("Uma frota deve conter no mínimo 1 e no máximo 5 tripulantes.");
