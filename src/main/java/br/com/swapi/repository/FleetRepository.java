@@ -26,10 +26,12 @@ public class FleetRepository {
 
     // Busca uma frota pelo nome
     public FleetRecord findByName(String name) {
-        Document query = new Document("name", name);
+        // Cria uma expressão regular para busca case-insensitive
+        Document query = new Document("name", new Document("$regex", "^" + name + "$").append("$options", "i"));
         Document result = fleetCollection.find(query).first();
         return result != null ? new FleetMapper().mapToFleetRecord(result) : null;
     }
+
 
     public void deleteByName(String name) {
         Document query = new Document("name", name);
