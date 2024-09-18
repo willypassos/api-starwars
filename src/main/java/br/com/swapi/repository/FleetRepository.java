@@ -47,4 +47,21 @@ public class FleetRepository {
                 .forEach(doc -> fleets.add(new FleetMapper().mapToFleetRecord(doc)));
         return fleets;
     }
+
+    public void updateFleet(Document fleetDocument) {
+        String fleetName = fleetDocument.getString("name");
+        Document filter = new Document("name", fleetName);
+        Document update = new Document("$set", fleetDocument);
+
+        // Atualiza o documento da frota no MongoDB
+        fleetCollection.updateOne(filter, update);
+    }
+
+
+    public List<FleetRecord> findAll() {
+        List<FleetRecord> fleets = new ArrayList<>();
+        fleetCollection.find().forEach(doc -> fleets.add(new FleetMapper().mapToFleetRecord(doc)));
+        return fleets;
+    }
+
 }

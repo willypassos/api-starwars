@@ -34,6 +34,8 @@ public class FleetHandler implements HttpHandler {
                 handleGetFleet(exchange);
             } else if ("DELETE".equalsIgnoreCase(method) && path.startsWith("/starwars/v1/fleet/")) {
                 handleDeleteFleet(exchange);
+            } else if ("PUT".equalsIgnoreCase(method) && path.startsWith("/starwars/v1/fleet/")) {
+                handleUpdateFleet(exchange);
             } else {
                 sendResponse(exchange, "Not Found", 404);
             }
@@ -78,6 +80,21 @@ public class FleetHandler implements HttpHandler {
             handleError(exchange, "Failed to delete fleet: " + e.getMessage(), 500);
         }
     }
+
+    private void handleUpdateFleet(HttpExchange exchange) throws IOException {
+        String[] pathParts = exchange.getRequestURI().getPath().split("/");
+        String fleetName = pathParts[pathParts.length - 1];
+
+        List<Integer> crewIds = objectMapper.readValue(exchange.getRequestBody(), List.class);
+        try {
+            FleetRecord updatedFleet = fleetService.updateFleet(fleetName, crewIds);
+            String jsonResponse = objectMapper.writeValueAsString(updatedFleet);
+            sendResponse(exchange, jsonResponse, 200);
+        } catch (Exception e) {
+            handleError(exchange, "Failed to update fleet: " + e.getMessage(), 500);
+        }
+    }
+
 
     private Map<String, String> parseQueryParams(String query) {
         Map<String, String> queryPairs = new java.util.HashMap<>();
