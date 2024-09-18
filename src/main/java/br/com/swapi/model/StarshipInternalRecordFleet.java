@@ -7,12 +7,12 @@ public class StarshipInternalRecordFleet {
     private String crew;
     private String cargo;
     private String speed;
-    private int external_id;
+    private Integer external_id;
     private String starship_class;
     private boolean available;
 
 
-    public StarshipInternalRecordFleet(String name, String model, String price, String crew, String cargo, String speed, int external_id, String starship_class,boolean available) {
+    public StarshipInternalRecordFleet(String name, String model, String price, String crew, String cargo, String speed, Integer external_id, String starship_class,boolean available) {
         this.name = name;
         this.model = model;
         this.price = price;
@@ -80,7 +80,7 @@ public class StarshipInternalRecordFleet {
         this.speed = speed;
     }
 
-    public int getExternal_id() {
+    public Integer getExternal_id() {
         return external_id;
     }
 

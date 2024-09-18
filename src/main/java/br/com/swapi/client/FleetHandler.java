@@ -26,19 +26,14 @@ public class FleetHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
-        String responseText;
 
         try {
             if ("POST".equalsIgnoreCase(method) && path.equals("/starwars/v1/fleet")) {
                 handlePostFleet(exchange);
-            } else if ("PUT".equalsIgnoreCase(method) && path.startsWith("/starwars/v1/fleet/")) {
-                String fleetName = path.split("/")[4];  // Corrigido para extrair o nome da frota
-                handleUpdateFleet(exchange, fleetName);
-            } else if ("DELETE".equalsIgnoreCase(method) && path.startsWith("/starwars/v1/fleet/")) {
-                String fleetName = path.split("/")[4];  // Corrigido para extrair o nome da frota
-                handleDeleteFleet(exchange, fleetName);
             } else if ("GET".equalsIgnoreCase(method) && path.equals("/starwars/v1/fleet")) {
                 handleGetFleet(exchange);
+            } else if ("DELETE".equalsIgnoreCase(method) && path.startsWith("/starwars/v1/fleet/")) {
+                handleDeleteFleet(exchange);
             } else {
                 sendResponse(exchange, "Not Found", 404);
             }
@@ -58,30 +53,30 @@ public class FleetHandler implements HttpHandler {
         }
     }
 
-    private void handleUpdateFleet(HttpExchange exchange, String name) throws IOException {
-        List<Integer> crewIds = objectMapper.readValue(exchange.getRequestBody(), List.class);
+    private void handleGetFleet(HttpExchange exchange) throws IOException {
+        Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
+        Integer page = queryParams.containsKey("page") ? Integer.parseInt(queryParams.get("page")) : 1;
+        String name = queryParams.get("name");
+
         try {
-            FleetRecord fleet = fleetService.updateFleet(name, crewIds);
-            String jsonResponse = objectMapper.writeValueAsString(fleet);
+            List<FleetRecord> fleets = fleetService.getFleet(page, name);
+            String jsonResponse = objectMapper.writeValueAsString(fleets);
             sendResponse(exchange, jsonResponse, 200);
         } catch (Exception e) {
-            handleError(exchange, e.getMessage(), 500);
+            handleError(exchange, "Failed to fetch fleets: " + e.getMessage(), 500);
         }
     }
 
-    private void handleDeleteFleet(HttpExchange exchange, String name) throws IOException {
-        fleetService.deleteFleet(name);
-        sendResponse(exchange, "Fleet deleted successfully", 200);
-    }
+    private void handleDeleteFleet(HttpExchange exchange) throws IOException {
+        String[] pathParts = exchange.getRequestURI().getPath().split("/");
+        String fleetName = pathParts[pathParts.length - 1]; // Obtém o último segmento da URL como o nome
 
-    private void handleGetFleet(HttpExchange exchange) throws IOException {
-        Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
-        Integer page = queryParams.containsKey("page") ? Integer.parseInt(queryParams.get("page")) : 1;  // Usa 1 como padrão
-        String name = queryParams.get("name");
-
-        List<FleetRecord> fleets = fleetService.getFleet(page, name);
-        String jsonResponse = objectMapper.writeValueAsString(fleets);
-        sendResponse(exchange, jsonResponse, 200);
+        try {
+            fleetService.deleteFleet(fleetName);
+            sendResponse(exchange, "Fleet deleted successfully", 200);
+        } catch (Exception e) {
+            handleError(exchange, "Failed to delete fleet: " + e.getMessage(), 500);
+        }
     }
 
     private Map<String, String> parseQueryParams(String query) {
@@ -99,7 +94,7 @@ public class FleetHandler implements HttpHandler {
 
     private void sendResponse(HttpExchange exchange, String responseText, int statusCode) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(statusCode, responseText.length());
+        exchange.sendResponseHeaders(statusCode, responseText.getBytes().length);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(responseText.getBytes());
         }

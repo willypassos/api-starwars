@@ -8,9 +8,9 @@ public class CrewRecord {
     private String mass;
     private String gender;
     private boolean available;
-    private int externalId;
+    private Integer externalId;
 
-    public CrewRecord(String name, String height, String mass, String gender, boolean available, int externalId) {
+    public CrewRecord(String name, String height, String mass, String gender, boolean available, Integer externalId) {
         this.name = name;
         this.height = height;
         this.mass = mass;
@@ -63,7 +63,7 @@ public class CrewRecord {
         return externalId;
     }
 
-    public void setExternalId(int externalId) {
+    public void setExternalId(Integer externalId) {
         this.externalId = externalId;
     }
 

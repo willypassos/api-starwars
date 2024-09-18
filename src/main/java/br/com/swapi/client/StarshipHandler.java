@@ -1,7 +1,8 @@
 package br.com.swapi.client;
 
+import br.com.swapi.exception.GenericExceptionDTO;
 import br.com.swapi.model.StarshipInternalRecordFleet;
-import br.com.swapi.service.IStarshipService;
+import br.com.swapi.service.SWAPIClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -13,11 +14,11 @@ import java.util.Map;
 
 public class StarshipHandler implements HttpHandler {
 
-    private final IStarshipService starshipService;
+    private final SWAPIClient swapiClient; // Agora diretamente usando SWAPIClient
     private final ObjectMapper objectMapper;
 
-    public StarshipHandler(IStarshipService starshipService) {
-        this.starshipService = starshipService;
+    public StarshipHandler(SWAPIClient swapiClient) {
+        this.swapiClient = swapiClient;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -26,29 +27,27 @@ public class StarshipHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
 
-        if ("GET".equalsIgnoreCase(method) && path.equals("/starship")) {
+        if ("GET".equalsIgnoreCase(method) && path.equals("/starwars/v1/starship")) {
             handleGetStarshipByPage(exchange);
         } else {
-            sendResponse(exchange, "Not Found", 404);
+            sendError(exchange, "Not Found", 404);
         }
     }
 
     // Handler para o método GET com paginação e filtro opcional por nome
     private void handleGetStarshipByPage(HttpExchange exchange) throws IOException {
-        Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
-
-        // Obtenha os parâmetros de consulta (page e name)
-        int page = Integer.parseInt(queryParams.getOrDefault("page", "1"));  // Parâmetro page
-        String name = queryParams.get("name");  // Parâmetro name opcional
-
         try {
-            // Use o método atualizado getStarshipByPage
-            List<StarshipInternalRecordFleet> starships = starshipService.getStarshipByPage(page, name);
-            String jsonResponse = objectMapper.writeValueAsString(starships);  // Serializa a resposta
+            Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
+            int page = Integer.parseInt(queryParams.getOrDefault("page", "1"));
+            String name = queryParams.get("name");
 
+            // Use o SWAPIClient diretamente para buscar os dados
+            List<StarshipInternalRecordFleet> starships = swapiClient.getStarships(page, name);
+            String jsonResponse = objectMapper.writeValueAsString(starships);
             sendResponse(exchange, jsonResponse, 200);
+
         } catch (IOException e) {
-            handleError(exchange, "Failed to fetch starships data: " + e.getMessage(), 500);
+            sendError(exchange, "Failed to fetch starship data: " + e.getMessage(), 500);
         }
     }
 
@@ -67,13 +66,15 @@ public class StarshipHandler implements HttpHandler {
 
     private void sendResponse(HttpExchange exchange, String responseText, int statusCode) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(statusCode, responseText.getBytes().length);
+        exchange.sendResponseHeaders(statusCode, responseText.length());
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(responseText.getBytes());
         }
     }
 
-    private void handleError(HttpExchange exchange, String errorMessage, int statusCode) throws IOException {
-        sendResponse(exchange, "{\"error\": \"" + errorMessage + "\"}", statusCode);
+    private void sendError(HttpExchange exchange, String errorMessage, int statusCode) throws IOException {
+        GenericExceptionDTO errorResponse = new GenericExceptionDTO(String.valueOf(statusCode), errorMessage);
+        String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+        sendResponse(exchange, jsonResponse, statusCode);
     }
 }

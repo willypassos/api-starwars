@@ -5,11 +5,11 @@ public class CrewRecordFleet {
     private String height;
     private String mass;
     private String gender;
-    private int externalId;
+    private Integer externalId;
     private boolean available;  // Adicionando o campo 'available'
 
     // Construtor com todos os parâmetros
-    public CrewRecordFleet(String name, String height, String mass, String gender, int externalId, boolean available) {
+    public CrewRecordFleet(String name, String height, String mass, String gender, Integer externalId, boolean available) {
         this.name = name;
         this.height = height;
         this.mass = mass;
@@ -51,7 +51,7 @@ public class CrewRecordFleet {
         this.gender = gender;
     }
 
-    public int getExternalId() {
+    public Integer getExternalId() {
         return externalId;
     }
 

@@ -5,8 +5,9 @@ import br.com.swapi.model.FleetRecordRequestBody;
 import java.util.List;
 
 public interface IFleetService {
-    FleetRecord postFleet(FleetRecordRequestBody fleet) throws Exception;
-    FleetRecord updateFleet(String name, List<Integer> crewIds) throws Exception;
-    void deleteFleet(String name);
-    List<FleetRecord> getFleet(Integer page, String name);
+    FleetRecord postFleet(FleetRecordRequestBody fleetRequest) throws Exception;
+//    FleetRecord updateFleet(String name, List<Integer> crewIds) throws Exception;
+void deleteFleet(String name) throws Exception;
+
+    List<FleetRecord> getFleet(Integer page, String name) throws Exception;
 }

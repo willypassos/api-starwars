@@ -1,7 +1,8 @@
 package br.com.swapi.client;
 
-import br.com.swapi.model.CrewRecord;
-import br.com.swapi.service.ICrewService;
+import br.com.swapi.exception.GenericExceptionDTO;
+import br.com.swapi.model.CrewRecordFleet;
+import br.com.swapi.service.SWAPIClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -13,11 +14,11 @@ import java.util.Map;
 
 public class CrewHandler implements HttpHandler {
 
-    private final ICrewService crewService;
+    private final SWAPIClient swapiClient;
     private final ObjectMapper objectMapper;
 
-    public CrewHandler(ICrewService crewService) {
-        this.crewService = crewService;
+    public CrewHandler(SWAPIClient swapiClient) {
+        this.swapiClient = swapiClient;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -26,29 +27,26 @@ public class CrewHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
 
-        if ("GET".equalsIgnoreCase(method) && path.equals("/crew")) {
-            handleGetCrewByPage(exchange);  // Alinhando com o operationId do Swagger
+        if ("GET".equalsIgnoreCase(method) && path.equals("/starwars/v1/crew")) {
+            handleGetCrewByPage(exchange);
         } else {
-            sendResponse(exchange, "Not Found", 404);
+            sendErrorResponse(exchange, "Not Found", "404", 404);
         }
     }
 
-    // Handler para o método GET com paginação e filtro opcional por nome
     private void handleGetCrewByPage(HttpExchange exchange) throws IOException {
         Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
 
-        // Obtenha os parâmetros de consulta (page e name)
         int page = Integer.parseInt(queryParams.getOrDefault("page", "1"));
         String name = queryParams.get("name");
 
         try {
-            // Use o método getCrewByPage do service, conforme o Swagger
-            List<CrewRecord> crew = crewService.getCrewByPage(page, name);
+            List<CrewRecordFleet> crew = swapiClient.getCrew(page, name);
             String jsonResponse = objectMapper.writeValueAsString(crew);
 
             sendResponse(exchange, jsonResponse, 200);
         } catch (IOException e) {
-            handleError(exchange, "Failed to fetch crew data: " + e.getMessage(), 500);
+            sendErrorResponse(exchange, "Failed to fetch crew data", e.getMessage(), 500);
         }
     }
 
@@ -73,7 +71,9 @@ public class CrewHandler implements HttpHandler {
         }
     }
 
-    private void handleError(HttpExchange exchange, String errorMessage, int statusCode) throws IOException {
-        sendResponse(exchange, "{\"error\": \"" + errorMessage + "\"}", statusCode);
+    private void sendErrorResponse(HttpExchange exchange, String error, String code, int statusCode) throws IOException {
+        GenericExceptionDTO exceptionDTO = new GenericExceptionDTO(code, error);
+        String jsonResponse = objectMapper.writeValueAsString(exceptionDTO);
+        sendResponse(exchange, jsonResponse, statusCode);
     }
 }

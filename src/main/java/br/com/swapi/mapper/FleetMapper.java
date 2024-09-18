@@ -1,7 +1,7 @@
 package br.com.swapi.mapper;
 
-import br.com.swapi.model.FleetRecord;
 import br.com.swapi.model.CrewRecordFleet;
+import br.com.swapi.model.FleetRecord;
 import br.com.swapi.model.StarshipInternalRecordFleet;
 import org.bson.Document;
 
@@ -44,19 +44,21 @@ public class FleetMapper {
                 .append("name", crew.getName())
                 .append("height", crew.getHeight())
                 .append("mass", crew.getMass())
-                .append("gender", crew.getGender());
+                .append("gender", crew.getGender())
+                .append("available", crew.isAvailable());
     }
 
     // Mapeia um Document MongoDB para um CrewRecordFleet
     private CrewRecordFleet mapDocumentToCrew(Document doc) {
-        boolean available = doc.getBoolean("available");
+        // Verifica se o campo "available" existe e é um Boolean, caso contrário, define como false
+        boolean available = doc.containsKey("available") && Boolean.TRUE.equals(doc.getBoolean("available"));
         return new CrewRecordFleet(
                 doc.getString("name"),
                 doc.getString("height"),
                 doc.getString("mass"),
                 doc.getString("gender"),
                 doc.getInteger("external_id"),
-                available  // Verifica a disponibilidade do tripulante
+                available
         );
     }
 
@@ -64,11 +66,19 @@ public class FleetMapper {
     private Document mapStarshipToDocument(StarshipInternalRecordFleet starship) {
         return new Document("external_id", starship.getExternal_id())
                 .append("name", starship.getName())
-                .append("model", starship.getModel());
+                .append("model", starship.getModel())
+                .append("price", starship.getPrice())
+                .append("crew", starship.getCrew())
+                .append("cargo", starship.getCargo())
+                .append("speed", starship.getSpeed())
+                .append("starship_class", starship.getStarship_class())
+                .append("available", starship.isAvailable());
     }
 
     // Mapeia um Document MongoDB para um StarshipInternalRecordFleet
     private StarshipInternalRecordFleet mapDocumentToStarship(Document doc) {
+        // Verifica se o campo "available" existe e é um Boolean, caso contrário, define como false
+        boolean available = doc.containsKey("available") && Boolean.TRUE.equals(doc.getBoolean("available"));
         return new StarshipInternalRecordFleet(
                 doc.getString("name"),
                 doc.getString("model"),
@@ -78,8 +88,7 @@ public class FleetMapper {
                 doc.getString("speed"),
                 doc.getInteger("external_id"),
                 doc.getString("starship_class"),
-                doc.getBoolean("available")  // Inclui o campo available
+                available
         );
     }
-
 }

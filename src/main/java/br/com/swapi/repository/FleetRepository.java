@@ -24,16 +24,6 @@ public class FleetRepository {
         fleetCollection.insertOne(fleetDocument);
     }
 
-    // Atualiza uma frota existente
-    public void updateFleet(FleetRecord fleet) {
-        Document filter = new Document("name", fleet.getName());
-        Document update = new Document("$set", new Document("crew", fleet.getCrew())
-                .append("starship", fleet.getStarship()));
-
-        // Atualiza o documento da frota no MongoDB
-        fleetCollection.updateOne(filter, update);
-    }
-
     // Busca uma frota pelo nome
     public FleetRecord findByName(String name) {
         Document query = new Document("name", name);
@@ -41,11 +31,11 @@ public class FleetRepository {
         return result != null ? new FleetMapper().mapToFleetRecord(result) : null;
     }
 
-    // Deleta uma frota pelo nome
     public void deleteByName(String name) {
         Document query = new Document("name", name);
         fleetCollection.deleteOne(query);
     }
+
 
     // Busca todas as frotas de forma paginada
     public List<FleetRecord> findAllPaginated(int page) {

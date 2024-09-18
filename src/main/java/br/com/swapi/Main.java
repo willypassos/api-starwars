@@ -7,9 +7,7 @@ import br.com.swapi.config.MongoDBConfig;
 import br.com.swapi.repository.FleetRepository;
 import br.com.swapi.service.*;
 
-import com.mongodb.client.MongoDatabase;
 import com.sun.net.httpserver.HttpServer;
-
 import java.net.InetSocketAddress;
 
 public class Main {
@@ -21,20 +19,15 @@ public class Main {
         // Instanciando o SWAPIClient
         SWAPIClient swapiClient = new SWAPIClient();
 
-        // Instanciando o MongoDB Database
-        MongoDatabase mongoDatabase = MongoDBConfig.getDatabase();
-
         // Instanciando o repositório do Fleet
         FleetRepository fleetRepository = new FleetRepository();
 
-        // Instanciando os serviços
-        IStarshipService starshipService = new StarshipService();
-        ICrewService crewService = new CrewService();
+        // Instanciando o serviço para Fleet
         IFleetService fleetService = new FleetService();
 
-        // Instanciando os handlers
-        CrewHandler crewHandler = new CrewHandler(crewService);
-        StarshipHandler starshipHandler = new StarshipHandler(starshipService);
+        // Instanciando os handlers, agora passando SWAPIClient diretamente
+        CrewHandler crewHandler = new CrewHandler(swapiClient);
+        StarshipHandler starshipHandler = new StarshipHandler(swapiClient);
         FleetHandler fleetHandler = new FleetHandler(fleetService);
 
         // Configuração dos contextos (rotas) para os handlers
