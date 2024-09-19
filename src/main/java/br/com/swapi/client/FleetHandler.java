@@ -25,48 +25,48 @@ public class FleetHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
+        String method = exchange.getRequestMethod(); // Pega o método HTTP da requisição
+        String path = exchange.getRequestURI().getPath(); // Pega o caminho da requisição
 
         try {
-            if ("POST".equalsIgnoreCase(method) && path.equals("/starwars/v1/fleet")) {
+            if ("POST".equalsIgnoreCase(method) && path.equals("/starwars/v1/fleet")) { // Verifica se o método é POST e o caminho é /starwars/v1/fleet
                 handlePostFleet(exchange);
-            } else if ("GET".equalsIgnoreCase(method) && path.equals("/starwars/v1/fleet")) {
+            } else if ("GET".equalsIgnoreCase(method) && path.equals("/starwars/v1/fleet")) { //
                 handleGetFleet(exchange);
             } else if ("DELETE".equalsIgnoreCase(method) && path.startsWith("/starwars/v1/fleet/")) {
                 handleDeleteFleet(exchange);
             } else if ("PUT".equalsIgnoreCase(method) && path.startsWith("/starwars/v1/fleet/")) {
                 handleUpdateFleet(exchange);
             } else {
-                sendResponse(exchange, "Not Found", HttpStatus.NOT_FOUND.getCode());
+                sendResponse(exchange, "Not Found", HttpStatus.NOT_FOUND.getCode()); // Envia uma resposta de erro para o cliente
             }
         } catch (Exception e) {
-            handleError(exchange, e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
+            handleError(exchange, e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode()); // Envia uma resposta de erro para o cliente
         }
     }
 
     private void handlePostFleet(HttpExchange exchange) throws IOException {
-        FleetRecordRequestBody request = objectMapper.readValue(exchange.getRequestBody(), FleetRecordRequestBody.class);
+        FleetRecordRequestBody request = objectMapper.readValue(exchange.getRequestBody(), FleetRecordRequestBody.class); // Le o corpo da requisição como FleetRecordRequestBody
         try {
-            FleetRecord fleet = fleetService.postFleet(request);
-            String jsonResponse = objectMapper.writeValueAsString(fleet);
-            sendResponse(exchange, jsonResponse, HttpStatus.CREATED.getCode());
+            FleetRecord fleet = fleetService.postFleet(request); // Chama o método postFleet da IFleetService
+            String jsonResponse = objectMapper.writeValueAsString(fleet); // Converte o objeto para JSON
+            sendResponse(exchange, jsonResponse, HttpStatus.CREATED.getCode()); // Envia a resposta para o cliente
         } catch (Exception e) {
-            handleError(exchange, e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
+            handleError(exchange, e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode()); // Envia uma resposta de erro para o cliente
         }
     }
 
     private void handleGetFleet(HttpExchange exchange) throws IOException {
-        Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
-        Integer page = queryParams.containsKey("page") ? Integer.parseInt(queryParams.get("page")) : 1;
-        String name = queryParams.get("name");
+        Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery()); // Pega os parâmetros da requisição
+        Integer page = queryParams.containsKey("page") ? Integer.parseInt(queryParams.get("page")) : 1; // Use o SWAPIClient diretamente para buscar os dados
+        String name = queryParams.get("name"); // Use o SWAPIClient diretamente para buscar os dados
 
         try {
-            List<FleetRecord> fleets = fleetService.getFleet(page, name);
-            String jsonResponse = objectMapper.writeValueAsString(fleets);
-            sendResponse(exchange, jsonResponse, HttpStatus.OK.getCode());
+            List<FleetRecord> fleets = fleetService.getFleet(page, name); // chama o método getFleet da IFleetService
+            String jsonResponse = objectMapper.writeValueAsString(fleets); // Converte o objeto para JSON
+            sendResponse(exchange, jsonResponse, HttpStatus.OK.getCode()); // Envia a resposta para o cliente
         } catch (Exception e) {
-            handleError(exchange, "Failed to fetch fleets: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
+            handleError(exchange, "Erro ao buscar frotas: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode()); // Envia uma resposta de erro para o cliente
         }
     }
 
@@ -76,9 +76,9 @@ public class FleetHandler implements HttpHandler {
 
         try {
             fleetService.deleteFleet(fleetName);
-            sendResponse(exchange, "Fleet deleted successfully", HttpStatus.OK.getCode());
+            sendResponse(exchange, "Frota deletada com sucesso: ", HttpStatus.OK.getCode()); // Envia a resposta para o cliente
         } catch (Exception e) {
-            handleError(exchange, "Failed to delete fleet: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
+            handleError(exchange, "Erro ao deletar frota: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.ordinal()); // Envia uma resposta de erro para o cliente
         }
     }
 
@@ -92,7 +92,7 @@ public class FleetHandler implements HttpHandler {
             String jsonResponse = objectMapper.writeValueAsString(updatedFleet);
             sendResponse(exchange, jsonResponse, HttpStatus.CREATED.getCode());
         } catch (Exception e) {
-            handleError(exchange, "Failed to update fleet: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
+            handleError(exchange, "Erro ao atualizar a frota: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 
