@@ -78,7 +78,7 @@ public class FleetHandler implements HttpHandler {
             fleetService.deleteFleet(fleetName);
             sendResponse(exchange, "Frota deletada com sucesso: ", HttpStatus.OK.getCode()); // Envia a resposta para o cliente
         } catch (Exception e) {
-            handleError(exchange, "Erro ao deletar frota: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.ordinal()); // Envia uma resposta de erro para o cliente
+            handleError(exchange, "Erro ao deletar frota: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode()); // Envia uma resposta de erro para o cliente
         }
     }
 
