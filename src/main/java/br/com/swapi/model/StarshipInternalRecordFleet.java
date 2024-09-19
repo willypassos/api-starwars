@@ -1,22 +1,39 @@
 package br.com.swapi.model;
 
-import org.bson.Document;
-
 public class StarshipInternalRecordFleet {
     private String name;
     private String model;
-    private String starshipClass;
-    private int externalId;
+    private String price;
+    private String crew;
+    private String cargo;
+    private String speed;
+    private Integer external_id;
+    private String starship_class;
+    private boolean available;
 
-    public StarshipInternalRecordFleet(String name, String model, String starshipClass, int externalId) {
+
+    public StarshipInternalRecordFleet(String name, String model, String price, String crew, String cargo, String speed, Integer external_id, String starship_class,boolean available) {
         this.name = name;
         this.model = model;
-        this.starshipClass = starshipClass;
-        this.externalId = externalId;
+        this.price = price;
+        this.crew = crew;
+        this.cargo = cargo;
+        this.speed = speed;
+        this.external_id = external_id;
+        this.starship_class = starship_class;
+        this.available = available;
     }
 
     public String getName() {
         return name;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 
     public void setName(String name) {
@@ -31,37 +48,54 @@ public class StarshipInternalRecordFleet {
         this.model = model;
     }
 
-    public String getStarshipClass() {
-        return starshipClass;
+    public String getPrice() {
+        return price;
     }
 
-    public void setStarshipClass(String starshipClass) {
-        this.starshipClass = starshipClass;
+    public void setPrice(String price) {
+        this.price = price;
     }
 
-    public int getExternalId() {
-        return externalId;
+    public String getCrew() {
+        return crew;
     }
 
-    public void setExternalId(int externalId) {
-        this.externalId = externalId;
+    public void setCrew(String crew) {
+        this.crew = crew;
     }
 
-    // Converter para Document do MongoDB
-    public Document toDocument() {
-        return new Document("name", this.name)
-                .append("model", this.model)
-                .append("starshipClass", this.starshipClass)
-                .append("externalId", this.externalId);
+    public String getCargo() {
+        return cargo;
     }
 
-    // Converter de Document para StarshipInternalRecordFleet
-    public static StarshipInternalRecordFleet fromDocument(Document doc) {
-        return new StarshipInternalRecordFleet(
-                doc.getString("name"),
-                doc.getString("model"),
-                doc.getString("starshipClass"),
-                doc.getInteger("externalId")
-        );
+    public void setCargo(String cargo) {
+        this.cargo = cargo;
+    }
+
+    public String getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(String speed) {
+        this.speed = speed;
+    }
+
+    public Integer getExternal_id() {
+        return external_id;
+    }
+
+    public void setExternal_id(int external_id) {
+        this.external_id = external_id;
+    }
+
+    public String getStarship_class() {
+        return starship_class;
+    }
+
+    public void setStarship_class(String starship_class) {
+        this.starship_class = starship_class;
     }
 }
+
+
+

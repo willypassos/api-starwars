@@ -1,7 +1,9 @@
 package br.com.swapi.client;
 
-import br.com.swapi.model.StarshipInternalRecord;
-import br.com.swapi.service.IStarshipService;
+import br.com.swapi.enums.HttpStatus;
+import br.com.swapi.exception.GenericExceptionDTO;
+import br.com.swapi.model.StarshipInternalRecordFleet;
+import br.com.swapi.service.SWAPIClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -12,63 +14,68 @@ import java.util.List;
 import java.util.Map;
 
 public class StarshipHandler implements HttpHandler {
-    private final IStarshipService starshipService;
+
+    private final SWAPIClient swapiClient; // Agora diretamente usando SWAPIClient
     private final ObjectMapper objectMapper;
 
-    public StarshipHandler(IStarshipService starshipService) {
-        this.starshipService = starshipService;
-        this.objectMapper = new ObjectMapper(); // Instanciando o ObjectMapper para serialização JSON
+    public StarshipHandler(SWAPIClient swapiClient) {
+        this.swapiClient = swapiClient;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
-    public void handle(HttpExchange exchange) {
-        try {
-            String query = exchange.getRequestURI().getQuery(); // Obtém a query string
-            Map<String, String> queryParams = parseQueryParams(query); // Usando o método auxiliar
+    public void handle(HttpExchange exchange) throws IOException {
+        String method = exchange.getRequestMethod();
+        String path = exchange.getRequestURI().getPath();
 
+        if ("GET".equalsIgnoreCase(method) && path.equals("/starwars/v1/starship")) {
+            handleGetStarshipByPage(exchange);
+        } else {
+            sendError(exchange, "Not Found", HttpStatus.NOT_FOUND.getCode());
+        }
+    }
+
+    // Handler para o método GET com paginação e filtro opcional por nome
+    private void handleGetStarshipByPage(HttpExchange exchange) throws IOException {
+        try {
+            Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery());
             int page = Integer.parseInt(queryParams.getOrDefault("page", "1"));
-            String name = queryParams.get("name");  // Obtém o nome, se estiver presente
+            String name = queryParams.get("name");
 
-            List<StarshipInternalRecord> starshipRecords = starshipService.getStarshipByPage(page, name); // Usando o método de busca de tripulantes
+            // Use o SWAPIClient diretamente para buscar os dados
+            List<StarshipInternalRecordFleet> starships = swapiClient.getStarships(page, name);
+            String jsonResponse = objectMapper.writeValueAsString(starships);
+            sendResponse(exchange, jsonResponse, HttpStatus.OK.getCode());
 
-            String jsonResponse = objectMapper.writeValueAsString(starshipRecords); // Usando Jackson para converter a lista em JSON
-
-            exchange.getResponseHeaders().set("Content-Type", "application/json"); // Definindo o tipo de conteúdo
-            exchange.sendResponseHeaders(200, jsonResponse.getBytes().length); // Enviando o conteúdo
-            try (OutputStream os = exchange.getResponseBody()) { // Usando o fluxo de escrita para enviar o conteúdo
-                os.write(jsonResponse.getBytes()); // Enviando o conteúdo
-            }
         } catch (IOException e) {
-            handleError(exchange, "Failed to fetch starships data: " + e.getMessage(), 500);
-        } catch (Exception e) {
-            handleError(exchange, "Internal Server Error: " + e.getMessage(), 500);
+            sendError(exchange, "Failed to fetch starship data: " + e.getMessage(), 500);
         }
     }
 
-    // Método auxiliar para analisar a query string e extrair os parâmetros
     private Map<String, String> parseQueryParams(String query) {
-        Map<String, String> queryPairs = new java.util.HashMap<>(); // Criando um HashMap para armazenar os parâmetros
-        if (query == null || query.isEmpty()) { // Se a query estiver vazia
-            return queryPairs; // Retorna um HashMap vazio
+        Map<String, String> queryPairs = new java.util.HashMap<>();
+        if (query == null || query.isEmpty()) {
+            return queryPairs;
         }
-        String[] pairs = query.split("&"); // Divide a query string em parâmetros
-        for (String pair : pairs) { // Para cada parâmetro
-            int idx = pair.indexOf("="); // Encontra o índice do caractere "="
-            queryPairs.put(pair.substring(0, idx), pair.substring(idx + 1)); // Adiciona o parâmetro ao HashMap
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            queryPairs.put(pair.substring(0, idx), pair.substring(idx + 1));
         }
-        return queryPairs; // Retorna o HashMap
+        return queryPairs;
     }
 
-    // Método para tratar erros e enviar respostas de erro ao cliente
-    private void handleError(HttpExchange exchange, String errorMessage, int statusCode) {
-        try {
-            exchange.getResponseHeaders().set("Content-Type", "application/json"); // Definindo o tipo de conteúdo
-            exchange.sendResponseHeaders(statusCode, errorMessage.getBytes().length); // Enviando o conteúdo
-            try (OutputStream os = exchange.getResponseBody()) { // Usando o fluxo de escrita para enviar o conteúdo
-                os.write(errorMessage.getBytes()); // Enviando o conteúdo
-            }
-        } catch (IOException e) {
-            System.err.println("Failed to send error response: " + e.getMessage());
+    private void sendResponse(HttpExchange exchange, String responseText, int statusCode) throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
+        exchange.sendResponseHeaders(statusCode, responseText.length());
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(responseText.getBytes());
         }
+    }
+
+    private void sendError(HttpExchange exchange, String errorMessage, int statusCode) throws IOException {
+        GenericExceptionDTO errorResponse = new GenericExceptionDTO(String.valueOf(statusCode), errorMessage);
+        String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+        sendResponse(exchange, jsonResponse, statusCode);
     }
 }
