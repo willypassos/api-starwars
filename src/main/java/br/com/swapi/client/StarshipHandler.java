@@ -1,5 +1,6 @@
 package br.com.swapi.client;
 
+import br.com.swapi.enums.HttpStatus;
 import br.com.swapi.exception.GenericExceptionDTO;
 import br.com.swapi.model.StarshipInternalRecordFleet;
 import br.com.swapi.service.SWAPIClient;
@@ -30,7 +31,7 @@ public class StarshipHandler implements HttpHandler {
         if ("GET".equalsIgnoreCase(method) && path.equals("/starwars/v1/starship")) {
             handleGetStarshipByPage(exchange);
         } else {
-            sendError(exchange, "Not Found", 404);
+            sendError(exchange, "Not Found", HttpStatus.NOT_FOUND.getCode());
         }
     }
 
@@ -44,7 +45,7 @@ public class StarshipHandler implements HttpHandler {
             // Use o SWAPIClient diretamente para buscar os dados
             List<StarshipInternalRecordFleet> starships = swapiClient.getStarships(page, name);
             String jsonResponse = objectMapper.writeValueAsString(starships);
-            sendResponse(exchange, jsonResponse, 200);
+            sendResponse(exchange, jsonResponse, HttpStatus.OK.getCode());
 
         } catch (IOException e) {
             sendError(exchange, "Failed to fetch starship data: " + e.getMessage(), 500);

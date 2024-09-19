@@ -1,5 +1,6 @@
 package br.com.swapi.client;
 
+import br.com.swapi.enums.HttpStatus;
 import br.com.swapi.model.FleetRecord;
 import br.com.swapi.model.FleetRecordRequestBody;
 import br.com.swapi.service.IFleetService;
@@ -37,10 +38,10 @@ public class FleetHandler implements HttpHandler {
             } else if ("PUT".equalsIgnoreCase(method) && path.startsWith("/starwars/v1/fleet/")) {
                 handleUpdateFleet(exchange);
             } else {
-                sendResponse(exchange, "Not Found", 404);
+                sendResponse(exchange, "Not Found", HttpStatus.NOT_FOUND.getCode());
             }
         } catch (Exception e) {
-            handleError(exchange, e.getMessage(), 500);
+            handleError(exchange, e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 
@@ -49,9 +50,9 @@ public class FleetHandler implements HttpHandler {
         try {
             FleetRecord fleet = fleetService.postFleet(request);
             String jsonResponse = objectMapper.writeValueAsString(fleet);
-            sendResponse(exchange, jsonResponse, 201);
+            sendResponse(exchange, jsonResponse, HttpStatus.CREATED.getCode());
         } catch (Exception e) {
-            handleError(exchange, e.getMessage(), 500);
+            handleError(exchange, e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 
@@ -63,9 +64,9 @@ public class FleetHandler implements HttpHandler {
         try {
             List<FleetRecord> fleets = fleetService.getFleet(page, name);
             String jsonResponse = objectMapper.writeValueAsString(fleets);
-            sendResponse(exchange, jsonResponse, 200);
+            sendResponse(exchange, jsonResponse, HttpStatus.OK.getCode());
         } catch (Exception e) {
-            handleError(exchange, "Failed to fetch fleets: " + e.getMessage(), 500);
+            handleError(exchange, "Failed to fetch fleets: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 
@@ -75,9 +76,9 @@ public class FleetHandler implements HttpHandler {
 
         try {
             fleetService.deleteFleet(fleetName);
-            sendResponse(exchange, "Fleet deleted successfully", 200);
+            sendResponse(exchange, "Fleet deleted successfully", HttpStatus.OK.getCode());
         } catch (Exception e) {
-            handleError(exchange, "Failed to delete fleet: " + e.getMessage(), 500);
+            handleError(exchange, "Failed to delete fleet: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.ordinal());
         }
     }
 
@@ -89,9 +90,9 @@ public class FleetHandler implements HttpHandler {
         try {
             FleetRecord updatedFleet = fleetService.updateFleet(fleetName, crewIds);
             String jsonResponse = objectMapper.writeValueAsString(updatedFleet);
-            sendResponse(exchange, jsonResponse, 200);
+            sendResponse(exchange, jsonResponse, HttpStatus.CREATED.getCode());
         } catch (Exception e) {
-            handleError(exchange, "Failed to update fleet: " + e.getMessage(), 500);
+            handleError(exchange, "Failed to update fleet: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 

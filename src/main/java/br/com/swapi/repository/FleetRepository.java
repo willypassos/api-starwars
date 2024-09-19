@@ -32,7 +32,6 @@ public class FleetRepository {
         return result != null ? new FleetMapper().mapToFleetRecord(result) : null;
     }
 
-
     public void deleteByName(String name) {
         Document query = new Document("name", name);
         fleetCollection.deleteOne(query);
@@ -42,7 +41,7 @@ public class FleetRepository {
     // Busca todas as frotas de forma paginada
     public List<FleetRecord> findAllPaginated(int page) {
         int pageSize = 10; // Define o tamanho da página
-        List<FleetRecord> fleets = new ArrayList<>();
+        List<FleetRecord> fleets = new ArrayList<>(); // Cria uma lista para armazenar as frotas
         fleetCollection.find()
                 .skip((page - 1) * pageSize)
                 .limit(pageSize)

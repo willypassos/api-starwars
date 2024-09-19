@@ -29,6 +29,11 @@ public class FleetService implements IFleetService {
             throw new Exception("Os seguintes membros da tripulação já estão em uso: " + crewInUse); // Lança uma exceção com todos os IDs em uso
         }
 
+        // Verifica se o ID da nave já está em uso
+        if (isStarshipInUse(fleetRequest.getStarshipId())) {
+            throw new Exception("A nave com o ID " + fleetRequest.getStarshipId() + " já está em uso."); // Lança uma exceção se a nave estiver em uso
+        }
+
         // Verifica se os IDs da tripulação existem na SWAPI
         List<CrewRecordFleet> crew = swapiClient.getCrew(1, null) // Busca os tripulantes da SWAPI
                 .stream() // Transforma os dados em Stream
@@ -57,10 +62,6 @@ public class FleetService implements IFleetService {
 
         return fleet; // Retorna a frota
     }
-
-
-
-
 
     @Override
     public List<FleetRecord> getFleet(Integer page, String name) {
@@ -138,7 +139,6 @@ public class FleetService implements IFleetService {
             throw new Exception("Uma frota deve conter no mínimo 1 e no máximo 5 tripulantes.");
         }
     }
-
 
     private boolean isStarshipInUse(int starshipId) {
         return fleetRepository.findAll().stream()

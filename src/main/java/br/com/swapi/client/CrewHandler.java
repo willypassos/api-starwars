@@ -1,5 +1,6 @@
 package br.com.swapi.client;
 
+import br.com.swapi.enums.HttpStatus;
 import br.com.swapi.exception.GenericExceptionDTO;
 import br.com.swapi.model.CrewRecordFleet;
 import br.com.swapi.service.SWAPIClient;
@@ -30,7 +31,7 @@ public class CrewHandler implements HttpHandler {
         if ("GET".equalsIgnoreCase(method) && path.equals("/starwars/v1/crew")) {
             handleGetCrewByPage(exchange);
         } else {
-            sendErrorResponse(exchange, "Not Found", "404", 404);
+            sendErrorResponse(exchange, "Not Found", "404", HttpStatus.NOT_FOUND.getCode());
         }
     }
 
@@ -46,7 +47,7 @@ public class CrewHandler implements HttpHandler {
 
             sendResponse(exchange, jsonResponse, 200);
         } catch (IOException e) {
-            sendErrorResponse(exchange, "Failed to fetch crew data", e.getMessage(), 500);
+            sendErrorResponse(exchange, "Failed to fetch crew data", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 
