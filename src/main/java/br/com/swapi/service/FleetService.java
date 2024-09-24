@@ -3,15 +3,29 @@ package br.com.swapi.service;
 import br.com.swapi.model.*;
 import br.com.swapi.repository.FleetRepository;
 import br.com.swapi.mapper.FleetMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import redis.clients.jedis.Jedis;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class FleetService implements IFleetService {
 
-    private final FleetRepository fleetRepository = new FleetRepository(); //
-    private final SWAPIClient swapiClient = new SWAPIClient(); // Consumindo diretamente da SWAPI
-    private final FleetMapper fleetMapper = new FleetMapper();
+    private final FleetRepository fleetRepository;
+    private final SWAPIClient swapiClient ;
+    private final FleetMapper fleetMapper;
+    private final Jedis jedis;
+    private final ObjectMapper objectMapper;
+
+    // Construtor que injeta as dependências
+    public FleetService(FleetRepository fleetRepository, SWAPIClient swapiClient, FleetMapper fleetMapper, Jedis jedis) {
+        this.fleetRepository = fleetRepository;
+        this.swapiClient = swapiClient;
+        this.fleetMapper = fleetMapper;
+        this.jedis = jedis;
+        this.objectMapper = new ObjectMapper();
+    }
 
     @Override
     public FleetRecord postFleet(FleetRecordRequestBody fleetRequest) throws Exception {
@@ -64,7 +78,20 @@ public class FleetService implements IFleetService {
     }
 
     @Override
-    public List<FleetRecord> getFleet(Integer page, String name) {
+    public List<FleetRecord> getFleet(Integer page, String name) throws Exception {
+        String cacheKey = generateCacheKey(page, name);
+
+        String cachedFleet = jedis.get(cacheKey);
+        if (cachedFleet != null) {
+            try {
+                return objectMapper.readValue(cachedFleet, objectMapper.getTypeFactory().
+                        constructCollectionType(List.class, FleetRecord.class));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                throw new Exception("Erro ao processar o cache de dados da frota.");
+            }
+        }
+
         if (name != null && !name.isEmpty()) { // Verifica se o nome foi informado
             // Busca a frota pelo nome
             FleetRecord fleet = fleetRepository.findByName(name);
@@ -143,5 +170,13 @@ public class FleetService implements IFleetService {
     private boolean isStarshipInUse(int starshipId) {
         return fleetRepository.findAll().stream()
                 .anyMatch(fleet -> fleet.getStarship().getExternal_id() == starshipId);
+    }
+
+    // Gera uma chave de cache baseada na página e no nome da frota
+    private String generateCacheKey(Integer page, String name) {
+        if (name != null && !name.isEmpty()) {
+            return "fleet:name:" + name;
+        }
+        return "fleet:page:" + page;
     }
 }

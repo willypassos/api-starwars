@@ -3,10 +3,15 @@ package br.com.swapi;
 import br.com.swapi.client.CrewHandler;
 import br.com.swapi.client.StarshipHandler;
 import br.com.swapi.client.FleetHandler;
+import br.com.swapi.config.RedisConfig;
+import br.com.swapi.mapper.FleetMapper;
+import br.com.swapi.repository.FleetRepository;
 import br.com.swapi.service.IFleetService;
 import br.com.swapi.service.SWAPIClient;
 import br.com.swapi.service.FleetService;
 import com.sun.net.httpserver.HttpServer;
+import redis.clients.jedis.Jedis;
+
 import java.net.InetSocketAddress;
 
 public class Main {
@@ -17,9 +22,14 @@ public class Main {
 
         // Instanciando o SWAPIClient
         SWAPIClient swapiClient = new SWAPIClient();
+        // Instanciando o Redis
+        Jedis jedis = RedisConfig.getJedis();
+        FleetRepository fleetRepository = new FleetRepository();
+        FleetMapper fleetMapper = new FleetMapper();
 
         // Instanciando o serviço para Fleet
-        IFleetService fleetService = new FleetService();
+        IFleetService fleetService = new FleetService(fleetRepository, swapiClient, fleetMapper, jedis);
+
 
         // Instanciando os handlers, agora passando SWAPIClient e fleetService diretamente
         CrewHandler crewHandler = new CrewHandler(swapiClient);

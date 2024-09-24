@@ -78,7 +78,7 @@ public class FleetHandler implements HttpHandler {
             fleetService.deleteFleet(fleetName);
             sendResponse(exchange, "Frota deletada com sucesso: ", HttpStatus.OK.getCode()); // Envia a resposta para o cliente
         } catch (Exception e) {
-            handleError(exchange, "Erro ao deletar frota: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode()); // Envia uma resposta de erro para o cliente
+            handleError(exchange, "Erro ao deletar frota: " + e.getMessage(), HttpStatus.NOT_FOUND.getCode()); // Envia uma resposta de erro para o cliente
         }
     }
 
@@ -92,10 +92,9 @@ public class FleetHandler implements HttpHandler {
             String jsonResponse = objectMapper.writeValueAsString(updatedFleet);
             sendResponse(exchange, jsonResponse, HttpStatus.CREATED.getCode());
         } catch (Exception e) {
-            handleError(exchange, "Erro ao atualizar a frota: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getCode());
+            handleError(exchange, "Erro ao atualizar a frota: " + e.getMessage(), HttpStatus.NOT_FOUND.getCode());;
         }
     }
-
 
     private Map<String, String> parseQueryParams(String query) {
         Map<String, String> queryPairs = new java.util.HashMap<>();
