@@ -1,5 +1,6 @@
 package br.com.swapi.service;
 
+import br.com.swapi.config.RedisConfig;
 import br.com.swapi.model.*;
 import br.com.swapi.repository.FleetRepository;
 import br.com.swapi.mapper.FleetMapper;
@@ -13,17 +14,19 @@ import java.util.stream.Collectors;
 public class FleetService implements IFleetService {
 
     private final FleetRepository fleetRepository;
-    private final SWAPIClient swapiClient ;
+    private final SWAPIClient swapiClient;
     private final FleetMapper fleetMapper;
     private final Jedis jedis;
     private final ObjectMapper objectMapper;
 
-    // Construtor que injeta as dependências
-    public FleetService(FleetRepository fleetRepository, SWAPIClient swapiClient, FleetMapper fleetMapper, Jedis jedis) {
+    // Construtor que injeta as dependências utilizando valores fixos para o Redis
+    public FleetService(FleetRepository fleetRepository, SWAPIClient swapiClient, FleetMapper fleetMapper) {
         this.fleetRepository = fleetRepository;
         this.swapiClient = swapiClient;
         this.fleetMapper = fleetMapper;
-        this.jedis = jedis;
+
+        // Utiliza o RedisConfig para obter a instância de Jedis com o Redis rodando localmente
+        this.jedis = RedisConfig.getJedis();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -74,99 +77,135 @@ public class FleetService implements IFleetService {
         // Mapeia o FleetRecord para Document antes de salvar
         fleetRepository.saveFleet(fleetMapper.mapToFleetDocument(fleet)); // Salva a frota
 
+        // Limpa o cache relacionado a essa frota
+        String cacheKey = generateCacheKey(null, fleetRequest.getName());
+        jedis.del(cacheKey); // Remove o cache para garantir que novos dados sejam consultados
+
         return fleet; // Retorna a frota
     }
 
     @Override
     public List<FleetRecord> getFleet(Integer page, String name) throws Exception {
+        // Gera uma chave de cache baseada na página e no nome da frota
         String cacheKey = generateCacheKey(page, name);
 
+        // Verifica se os dados estão no cache do Redis
         String cachedFleet = jedis.get(cacheKey);
-        if (cachedFleet != null) {
-            try {
-                return objectMapper.readValue(cachedFleet, objectMapper.getTypeFactory().
-                        constructCollectionType(List.class, FleetRecord.class));
+        if (cachedFleet != null) { // Se o cache estiver disponível
+                try {
+                // Tenta deserializar os dados do cache armazenados como JSON
+                List<FleetRecord> fleetRecords = objectMapper.readValue(cachedFleet, objectMapper.getTypeFactory() // Cria um objeto de mapeamento do Jackson
+                        .constructCollectionType(List.class, FleetRecord.class));// Cria uma lista de FleetRecord
+
+                // Verifica se a lista de fleetRecords não é nula ou vazia
+                if (fleetRecords != null && !fleetRecords.isEmpty()) {
+                    return fleetRecords; // Se o cache for válido, retorna os dados
+                } else {
+                    // Se o cache estiver vazio ou nulo, remove a chave do cache
+                    jedis.del(cacheKey);
+                }
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
-                throw new Exception("Erro ao processar o cache de dados da frota.");
+                // Remove o cache inválido para evitar futuros erros e lança exceção
+                jedis.del(cacheKey);
+                throw new Exception("Erro ao processar o cache de dados da frota para a chave: " + cacheKey, e);
             }
         }
 
-        if (name != null && !name.isEmpty()) { // Verifica se o nome foi informado
-            // Busca a frota pelo nome
+        // Se o cache não estiver disponível ou ocorreu um erro, busca no banco de dados
+        List<FleetRecord> fleets;
+        if (name != null && !name.isEmpty()) {
+            // Busca a frota pelo nome no banco de dados local
             FleetRecord fleet = fleetRepository.findByName(name);
-            return fleet != null ? List.of(fleet) : List.of();  // Retorna uma lista com a frota ou uma lista vazia
+            fleets = fleet != null ? List.of(fleet) : List.of(); // Retorna uma lista contendo a frota ou uma lista vazia
         } else {
-            // Retorna todas as frotas de forma paginada
-            int pageNumber = (page != null && page > 0) ? page : 1;  // Define um valor padrão para a página
-            return fleetRepository.findAllPaginated(pageNumber); // Retorna uma lista com as frotas
+            // Se o nome não for especificado, busca frotas paginadas
+            int pageNumber = (page != null && page > 0) ? page : 1;
+            fleets = fleetRepository.findAllPaginated(pageNumber); // Busca frotas paginadas
         }
+
+        // Armazena os dados no cache do Redis
+        try {
+            int cacheExpiration = 3600; // Valor fixo para a expiração do cache (em segundos)
+            jedis.setex(cacheKey, cacheExpiration, objectMapper.writeValueAsString(fleets));
+        } catch (JsonProcessingException e) {
+            // Se houver erro ao serializar os dados para o cache, lança exceção
+            throw new Exception("Erro ao salvar dados no cache para a chave: " + cacheKey, e);
+        }
+
+        return fleets; // Retorna as frotas encontradas
     }
 
     @Override
     public void deleteFleet(String name) throws Exception {
         // Verifica se a frota existe
-        FleetRecord existingFleet = fleetRepository.findByName(name); // Busca a frota pelo nome
+        FleetRecord existingFleet = fleetRepository.findByName(name);
         if (existingFleet == null) {
-            throw new Exception("Frota não encontrada"); // Caso não exista, lança uma exceção
+            throw new Exception("Frota não encontrada");
         }
 
         // Remove a frota do banco de dados
         fleetRepository.deleteByName(name);
+
+        // Limpa o cache relacionado à frota excluída
+        jedis.del("fleet:name:" + name);
     }
 
     @Override
     public FleetRecord updateFleet(String name, List<Integer> crewIds) throws Exception {
         // Verifica se a frota existe no banco de dados local
-        FleetRecord existingFleet = fleetRepository.findByName(name); // Busca a frota pelo nome
-        if (existingFleet == null) { // Caso não exista, lança uma exceção
-            throw new Exception("Frota não encontrada na base de dados."); // Caso não exista, lança uma exceção
+        FleetRecord existingFleet = fleetRepository.findByName(name);
+        if (existingFleet == null) {
+            throw new Exception("Frota não encontrada na base de dados.");
         }
 
         // Verifica se os IDs da tripulação existem na SWAPI e se estão disponíveis
-        List<CrewRecordFleet> updatedCrew = swapiClient.getCrew(1, null) // Busca os tripulantes da SWAPI
+        List<CrewRecordFleet> updatedCrew = swapiClient.getCrew(1, null)
                 .stream()
-                .filter(crewRecord -> crewIds.contains(crewRecord.getExternalId())) // Filtra pelos IDs da tripulação
-                .collect(Collectors.toList()); // Transforma em uma lista
+                .filter(crewRecord -> crewIds.contains(crewRecord.getExternalId()))
+                .collect(Collectors.toList());
 
         // Valida o número de tripulantes
-        validateCrewSize(updatedCrew); // Verifica se a tripulação possui entre 1 e 5 membros
+        validateCrewSize(updatedCrew);
 
-        if (updatedCrew.size() != crewIds.size()) { // Verifica se todos os IDs da tripulação existem
-            throw new Exception("Alguns membros da tripulação não foram encontrados na API externa."); // Caso não existam, lança uma exceção
+        if (updatedCrew.size() != crewIds.size()) {
+            throw new Exception("Alguns membros da tripulação não foram encontrados na API externa.");
         }
 
         // Verifica se algum dos novos crewIds já está em uso em outra frota
         List<Integer> crewInUse = crewIds.stream()
-                .filter(crewId -> isCrewInUse(crewId, name)) // Verifica excluindo a frota atual
+                .filter(crewId -> isCrewInUse(crewId, name))
                 .collect(Collectors.toList());
 
         if (!crewInUse.isEmpty()) {
-            throw new Exception("Os seguintes membros da tripulação já estão em uso: " + crewInUse); // Lança exceção com os IDs em uso
+            throw new Exception("Os seguintes membros da tripulação já estão em uso: " + crewInUse);
         }
 
         // Atualiza a frota com os novos dados
-        existingFleet.setCrew(updatedCrew); // Atualiza os tripulantes da frota
+        existingFleet.setCrew(updatedCrew);
+        fleetRepository.updateFleet(fleetMapper.mapToFleetDocument(existingFleet));
 
-        // Mapeia o FleetRecord atualizado para Document e salva no banco de dados
-        fleetRepository.updateFleet(fleetMapper.mapToFleetDocument(existingFleet)); // Atualiza a frota no MongoDB
+        // Limpa o cache relacionado à frota atualizada
+        jedis.del("fleet:name:" + name);
 
-        return existingFleet; // Retorna a frota atualizada
+        return existingFleet;
     }
 
     // Verifica se um tripulante está em uso em outra frota
     private boolean isCrewInUse(int crewId, String currentFleetName) {
-        return fleetRepository.findAll().stream()// Busca todas as frotas
-                .filter(fleet -> !fleet.getName().equals(currentFleetName)) // Exclui a frota atual da verificação
-                .flatMap(fleet -> fleet.getCrew().stream())// Busca os tripulantes da frota
-                .anyMatch(crew -> crew.getExternalId() == crewId); // Verifica se o tripulante está em uso
+        return fleetRepository.findAll().stream()
+                .filter(fleet -> !fleet.getName().equals(currentFleetName))
+                .flatMap(fleet -> fleet.getCrew().stream())
+                .anyMatch(crew -> crew.getExternalId() == crewId);
     }
+
+    // Valida se o tamanho da tripulação está dentro dos limites permitidos
     private void validateCrewSize(List<CrewRecordFleet> crew) throws Exception {
         if (crew.size() < 1 || crew.size() > 5) {
             throw new Exception("Uma frota deve conter no mínimo 1 e no máximo 5 tripulantes.");
         }
     }
 
+    // Verifica se a nave está em uso
     private boolean isStarshipInUse(int starshipId) {
         return fleetRepository.findAll().stream()
                 .anyMatch(fleet -> fleet.getStarship().getExternal_id() == starshipId);

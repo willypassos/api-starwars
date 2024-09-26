@@ -1,18 +1,44 @@
 version: '3.8'
+
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
+  app:
+    build:
+      context: .
+    container_name: my-app-container
     ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
+      - "8080:8080"
+    depends_on:
+      - redis
+      - mongo
+    networks:
+      - app-network
 
   redis:
     image: redis:latest
-    container_name: redis
+    container_name: redis-container
     ports:
       - "6379:6379"
 
-volumes:
-  mongo-data:
+  mongo:
+    image: mongo:latest
+    container_name: mongo-container
+    ports:
+      - "27017:27017"
+    # Remova as variáveis de autenticação abaixo
+    environment: []
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis-container:6379  # Configura para conectar ao Redis local
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
