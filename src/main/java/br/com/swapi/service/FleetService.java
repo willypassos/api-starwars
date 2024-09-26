@@ -5,10 +5,17 @@ import br.com.swapi.model.*;
 import br.com.swapi.repository.FleetRepository;
 import br.com.swapi.mapper.FleetMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import redis.clients.jedis.Jedis;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class FleetService implements IFleetService {
@@ -81,6 +88,9 @@ public class FleetService implements IFleetService {
         String cacheKey = generateCacheKey(null, fleetRequest.getName());
         jedis.del(cacheKey); // Remove o cache para garantir que novos dados sejam consultados
 
+        // Salva os dados da frota em um arquivo JSON de espionagem
+        saveEspionageData(fleet, "Criar");
+
         return fleet; // Retorna a frota
     }
 
@@ -92,7 +102,7 @@ public class FleetService implements IFleetService {
         // Verifica se os dados estão no cache do Redis
         String cachedFleet = jedis.get(cacheKey);
         if (cachedFleet != null) { // Se o cache estiver disponível
-                try {
+            try {
                 // Tenta deserializar os dados do cache armazenados como JSON
                 List<FleetRecord> fleetRecords = objectMapper.readValue(cachedFleet, objectMapper.getTypeFactory() // Cria um objeto de mapeamento do Jackson
                         .constructCollectionType(List.class, FleetRecord.class));// Cria uma lista de FleetRecord
@@ -148,6 +158,9 @@ public class FleetService implements IFleetService {
 
         // Limpa o cache relacionado à frota excluída
         jedis.del("fleet:name:" + name);
+
+        // Salva a atualização da exclusão no arquivo JSON de espionagem
+        saveEspionageData(existingFleet, "Excluir");
     }
 
     @Override
@@ -187,6 +200,9 @@ public class FleetService implements IFleetService {
         // Limpa o cache relacionado à frota atualizada
         jedis.del("fleet:name:" + name);
 
+        // Salva os dados atualizados no arquivo JSON de espionagem
+        saveEspionageData(existingFleet, "Atualizar");
+
         return existingFleet;
     }
 
@@ -217,5 +233,41 @@ public class FleetService implements IFleetService {
             return "fleet:name:" + name;
         }
         return "fleet:page:" + page;
+    }
+
+    // Método para salvar dados de espionagem em um arquivo JSON de forma assíncrona
+    private void saveEspionageData(FleetRecord fleet, String operation) {
+        CompletableFuture.runAsync(() -> { // Cria uma tarefa assíncrona para gravar os dados
+            try {
+                // Carrega o conteúdo existente do arquivo
+                File file = new File("espionagem.json");
+                List<Object> fleetRecords = new ArrayList<>();
+
+                if (file.exists()) {
+                    // Se o arquivo existir, ler o conteúdo como uma lista de FleetRecord
+                    try (FileReader reader = new FileReader(file)) {
+                        fleetRecords = objectMapper.readValue(reader, new TypeReference<List<Object>>() {});
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // Cria um registro contendo a operação e os dados da frota
+                var registro = new Object() {
+                    public final String operacao = operation;
+                    public final FleetRecord frota = fleet;
+                };
+
+                fleetRecords.add(registro); // Adiciona o novo registro ao array
+
+                // Grava o array atualizado de frotas de volta ao arquivo
+                try (FileWriter writer = new FileWriter(file)) {
+                    objectMapper.writeValue(writer, fleetRecords);
+                }
+            } catch (IOException e) {
+                // Tratar erro ao gravar o arquivo de espionagem
+                e.printStackTrace();
+            }
+        });
     }
 }

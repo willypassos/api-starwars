@@ -21,8 +21,8 @@
 - [x] Consultar se o tripulante ou nave realmente existem na SWAPI antes de inserir no banco de dados.
 
 ### 4. Cache e Performance
-- [ ] Utilizar Redis para cachear as respostas das tripulações criadas no banco de dados.
-- [ ] Limpar o cache ao criar, remover ou editar uma tripulação para manter as informações atualizadas.
+- [x] Utilizar Redis para cachear as respostas das tripulações criadas no banco de dados.
+- [x] Limpar o cache ao criar, remover ou editar uma tripulação para manter as informações atualizadas.
 
 ### 5. Paginação
 - [x] Implementar paginação nas rotas, incluindo a passagem de parâmetros de paginação para as chamadas à SWAPI.
@@ -31,7 +31,7 @@
 - [ ] Criar testes unitários para todos os fluxos implementados.
 
 ### 7. Fluxo de Espionagem
-- [ ] Implementar um mecanismo assíncrono para enviar os dados das tripulações atualizados para um arquivo JSON secreto sempre que uma frota for criada, editada ou removida.
+- [x] Implementar um mecanismo assíncrono para enviar os dados das tripulações atualizados para um arquivo JSON secreto sempre que uma frota for criada, editada ou removida.
 
 ### 8. Requisitos de Frota
 - [x] Garantir que uma frota tenha entre 1 e 5 tripulantes.xs

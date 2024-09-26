@@ -1,0 +1,244 @@
+[
+  {
+    "name": "levi",
+    "crew": [
+      {
+        "name": "Owen Lars",
+        "height": "178",
+        "mass": "120",
+        "gender": "male",
+        "externalId": 6,
+        "available": true
+      },
+      {
+        "name": "Beru Whitesun lars",
+        "height": "165",
+        "mass": "75",
+        "gender": "female",
+        "externalId": 7,
+        "available": true
+      }
+    ],
+    "starship": {
+      "name": "Star Destroyer",
+      "model": "Imperial I-class Star Destroyer",
+      "price": "150000000",
+      "crew": "47,060",
+      "cargo": "36000000",
+      "speed": "975",
+      "external_id": 3,
+      "starship_class": "Star Destroyer",
+      "available": true
+    }
+  },
+  {
+    "operacao": "Excluir",
+    "frota": {
+      "name": "nave01",
+      "crew": [
+        {
+          "name": "R5-D4",
+          "height": "97",
+          "mass": "32",
+          "gender": "n/a",
+          "externalId": 8,
+          "available": true
+        },
+        {
+          "name": "Biggs Darklighter",
+          "height": "183",
+          "mass": "84",
+          "gender": "male",
+          "externalId": 9,
+          "available": true
+        }
+      ],
+      "starship": {
+        "name": "Sentinel-class landing craft",
+        "model": "Sentinel-class landing craft",
+        "price": "240000",
+        "crew": "5",
+        "cargo": "180000",
+        "speed": "1000",
+        "external_id": 5,
+        "starship_class": "landing craft",
+        "available": true
+      }
+    }
+  },
+  {
+    "operacao": "Excluir",
+    "frota": {
+      "name": "levi",
+      "crew": [
+        {
+          "name": "Owen Lars",
+          "height": "178",
+          "mass": "120",
+          "gender": "male",
+          "externalId": 6,
+          "available": true
+        },
+        {
+          "name": "Beru Whitesun lars",
+          "height": "165",
+          "mass": "75",
+          "gender": "female",
+          "externalId": 7,
+          "available": true
+        }
+      ],
+      "starship": {
+        "name": "Star Destroyer",
+        "model": "Imperial I-class Star Destroyer",
+        "price": "150000000",
+        "crew": "47,060",
+        "cargo": "36000000",
+        "speed": "975",
+        "external_id": 3,
+        "starship_class": "Star Destroyer",
+        "available": true
+      }
+    }
+  },
+  {
+    "operacao": "Criar",
+    "frota": {
+      "name": "levi",
+      "crew": [
+        {
+          "name": "Owen Lars",
+          "height": "178",
+          "mass": "120",
+          "gender": "male",
+          "externalId": 6,
+          "available": true
+        },
+        {
+          "name": "Beru Whitesun lars",
+          "height": "165",
+          "mass": "75",
+          "gender": "female",
+          "externalId": 7,
+          "available": true
+        }
+      ],
+      "starship": {
+        "name": "Star Destroyer",
+        "model": "Imperial I-class Star Destroyer",
+        "price": "150000000",
+        "crew": "47,060",
+        "cargo": "36000000",
+        "speed": "975",
+        "external_id": 3,
+        "starship_class": "Star Destroyer",
+        "available": true
+      }
+    }
+  },
+  {
+    "operacao": "Excluir",
+    "frota": {
+      "name": "levi",
+      "crew": [
+        {
+          "name": "Owen Lars",
+          "height": "178",
+          "mass": "120",
+          "gender": "male",
+          "externalId": 6,
+          "available": true
+        },
+        {
+          "name": "Beru Whitesun lars",
+          "height": "165",
+          "mass": "75",
+          "gender": "female",
+          "externalId": 7,
+          "available": true
+        }
+      ],
+      "starship": {
+        "name": "Star Destroyer",
+        "model": "Imperial I-class Star Destroyer",
+        "price": "150000000",
+        "crew": "47,060",
+        "cargo": "36000000",
+        "speed": "975",
+        "external_id": 3,
+        "starship_class": "Star Destroyer",
+        "available": true
+      }
+    }
+  },
+  {
+    "operacao": "Criar",
+    "frota": {
+      "name": "vivo",
+      "crew": [
+        {
+          "name": "Owen Lars",
+          "height": "178",
+          "mass": "120",
+          "gender": "male",
+          "externalId": 6,
+          "available": true
+        },
+        {
+          "name": "Beru Whitesun lars",
+          "height": "165",
+          "mass": "75",
+          "gender": "female",
+          "externalId": 7,
+          "available": true
+        }
+      ],
+      "starship": {
+        "name": "Star Destroyer",
+        "model": "Imperial I-class Star Destroyer",
+        "price": "150000000",
+        "crew": "47,060",
+        "cargo": "36000000",
+        "speed": "975",
+        "external_id": 3,
+        "starship_class": "Star Destroyer",
+        "available": true
+      }
+    }
+  },
+  {
+    "operacao": "Atualizar",
+    "frota": {
+      "name": "vivo",
+      "crew": [
+        {
+          "name": "Biggs Darklighter",
+          "height": "183",
+          "mass": "84",
+          "gender": "male",
+          "externalId": 9,
+          "available": true
+        },
+        {
+          "name": "Obi-Wan Kenobi",
+          "height": "182",
+          "mass": "77",
+          "gender": "male",
+          "externalId": 10,
+          "available": true
+        }
+      ],
+      "starship": {
+        "name": "Star Destroyer",
+        "model": "Imperial I-class Star Destroyer",
+        "price": "150000000",
+        "crew": "47,060",
+        "cargo": "36000000",
+        "speed": "975",
+        "external_id": 3,
+        "starship_class": "Star Destroyer",
+        "available": true
+      }
+    }
+  }
+]
