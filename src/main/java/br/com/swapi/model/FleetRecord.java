@@ -7,6 +7,7 @@ public class FleetRecord {
     private List<CrewRecordFleet> crew;  // Usando CrewRecordFleet conforme especificado no Swagger
     private StarshipInternalRecordFleet starship;  // Usando StarshipInternalRecordFleet conforme especificado
 
+    public FleetRecord() {}
     public FleetRecord(String name, StarshipInternalRecordFleet starship, List<CrewRecordFleet> crew) {
         this.name = name;
         this.starship = starship;

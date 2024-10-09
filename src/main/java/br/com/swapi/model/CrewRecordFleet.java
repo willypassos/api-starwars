@@ -8,6 +8,8 @@ public class CrewRecordFleet {
     private Integer externalId;
     private boolean available;  // Adicionando o campo 'available'
 
+    public CrewRecordFleet() {}
+
     // Construtor com todos os parâmetros
     public CrewRecordFleet(String name, String height, String mass, String gender, Integer externalId, boolean available) {
         this.name = name;

@@ -48,7 +48,7 @@ public class StarshipHandler implements HttpHandler {
             sendResponse(exchange, jsonResponse, HttpStatus.OK.getCode());
 
         } catch (IOException e) {
-            sendError(exchange, "Failed to fetch starship data: " + e.getMessage(), 500);
+            sendError(exchange, "pagina nao existe na api externa: " + e.getMessage(), HttpStatus.NOT_FOUND.getCode());
         }
     }
 

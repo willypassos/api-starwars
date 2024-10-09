@@ -13,6 +13,7 @@ public class StarshipInternalRecord {
     private String starshipClass;
     private boolean available;
 
+    public StarshipInternalRecord() {}
     public StarshipInternalRecord(String name, String model, String price, String crew, String cargo, String speed,
                                   Integer externalId, String starshipClass, boolean available) {
         this.name = name;

@@ -10,6 +10,8 @@ public class CrewRecord {
     private boolean available;
     private Integer externalId;
 
+    public CrewRecord() {}
+
     public CrewRecord(String name, String height, String mass, String gender, boolean available, Integer externalId) {
         this.name = name;
         this.height = height;

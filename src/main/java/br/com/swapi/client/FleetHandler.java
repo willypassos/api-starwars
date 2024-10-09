@@ -45,7 +45,7 @@ public class FleetHandler implements HttpHandler {
         }
     }
 
-    private void handlePostFleet(HttpExchange exchange) throws IOException {
+    public void handlePostFleet(HttpExchange exchange) throws IOException {
         FleetRecordRequestBody request = objectMapper.readValue(exchange.getRequestBody(), FleetRecordRequestBody.class); // Le o corpo da requisição como FleetRecordRequestBody
         try {
             FleetRecord fleet = fleetService.postFleet(request); // Chama o método postFleet da IFleetService
@@ -56,7 +56,7 @@ public class FleetHandler implements HttpHandler {
         }
     }
 
-    private void handleGetFleet(HttpExchange exchange) throws IOException {
+    public void handleGetFleet(HttpExchange exchange) throws IOException {
         Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getQuery()); // Pega os parâmetros da requisição
         Integer page = queryParams.containsKey("page") ? Integer.parseInt(queryParams.get("page")) : 1; // Use o SWAPIClient diretamente para buscar os dados
         String name = queryParams.get("name"); // Use o SWAPIClient diretamente para buscar os dados
@@ -70,7 +70,7 @@ public class FleetHandler implements HttpHandler {
         }
     }
 
-    private void handleDeleteFleet(HttpExchange exchange) throws IOException {
+    public void handleDeleteFleet(HttpExchange exchange) throws IOException {
         String[] pathParts = exchange.getRequestURI().getPath().split("/");
         String fleetName = pathParts[pathParts.length - 1]; // Obtém o último segmento da URL como o nome
 
@@ -96,7 +96,7 @@ public class FleetHandler implements HttpHandler {
         }
     }
 
-    private Map<String, String> parseQueryParams(String query) {
+    public Map<String, String> parseQueryParams(String query) {
         Map<String, String> queryPairs = new java.util.HashMap<>();
         if (query == null || query.isEmpty()) {
             return queryPairs;

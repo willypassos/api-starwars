@@ -228,7 +228,7 @@ public class FleetService implements IFleetService {
     }
 
     // Gera uma chave de cache baseada na página e no nome da frota
-    private String generateCacheKey(Integer page, String name) {
+    public String generateCacheKey(Integer page, String name) {
         if (name != null && !name.isEmpty()) {
             return "fleet:name:" + name;
         }
@@ -236,7 +236,7 @@ public class FleetService implements IFleetService {
     }
 
     // Método para salvar dados de espionagem em um arquivo JSON de forma assíncrona
-    private void saveEspionageData(FleetRecord fleet, String operation) {
+    public void saveEspionageData(FleetRecord fleet, String operation) {
         CompletableFuture.runAsync(() -> { // Cria uma tarefa assíncrona para gravar os dados
             try {
                 // Carrega o conteúdo existente do arquivo

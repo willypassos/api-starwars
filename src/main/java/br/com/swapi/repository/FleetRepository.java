@@ -41,11 +41,11 @@ public class FleetRepository {
     // Busca todas as frotas de forma paginada
     public List<FleetRecord> findAllPaginated(int page) {
         int pageSize = 10; // Define o tamanho da página
-        List<FleetRecord> fleets = new ArrayList<>(); // Cria uma lista para armazenar as frotas
+        List<FleetRecord> fleets = new ArrayList<>(); //
         fleetCollection.find()
                 .skip((page - 1) * pageSize)
                 .limit(pageSize)
-                .forEach(doc -> fleets.add(new FleetMapper().mapToFleetRecord(doc)));
+                .forEach(doc -> fleets.add(new FleetMapper().mapToFleetRecord(doc)));// Cria uma lista de FleetRecord
         return fleets;
     }
 

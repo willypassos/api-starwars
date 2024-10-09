@@ -94,7 +94,7 @@ public class SWAPIClient {
     }
 
     // Método auxiliar para mapear JSON para CrewRecordFleet
-    private CrewRecordFleet mapToCrewRecordFleet(JsonNode crewJson) {
+    CrewRecordFleet mapToCrewRecordFleet(JsonNode crewJson) {
         return new CrewRecordFleet(
                 crewJson.get("name").asText(),
                 crewJson.get("height").asText(),
@@ -106,7 +106,7 @@ public class SWAPIClient {
     }
 
     // Método auxiliar para mapear JSON para StarshipInternalRecordFleet
-    private StarshipInternalRecordFleet mapToStarshipInternalRecordFleet(JsonNode starshipJson) {
+    StarshipInternalRecordFleet mapToStarshipInternalRecordFleet(JsonNode starshipJson) {
         return new StarshipInternalRecordFleet(
                 starshipJson.get("name").asText(),
                 starshipJson.get("model").asText(),

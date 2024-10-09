@@ -24,12 +24,30 @@ public class FleetMapper {
     }
 
     // Mapeia um Document do MongoDB para um FleetRecord
-    public FleetRecord mapToFleetRecord(Document doc) {
-        List<CrewRecordFleet> crew = ((List<Document>) doc.get("crew")).stream()
-                .map(this::mapDocumentToCrew)
-                .collect(Collectors.toList());
+//    public FleetRecord mapToFleetRecord(Document doc) {
+//        List<CrewRecordFleet> crew = ((List<Document>) doc.get("crew")).stream()
+//                .map(this::mapDocumentToCrew)
+//                .collect(Collectors.toList());
+//
+//        StarshipInternalRecordFleet starship = mapDocumentToStarship((Document) doc.get("starship"));
+//
+//        return new FleetRecord(
+//                doc.getString("name"),
+//                starship,
+//                crew
+//        );
+//    }
 
-        StarshipInternalRecordFleet starship = mapDocumentToStarship((Document) doc.get("starship"));
+    public FleetRecord mapToFleetRecord(Document doc) {
+        List<CrewRecordFleet> crew = doc.containsKey("crew") && doc.get("crew") != null
+                ? ((List<Document>) doc.get("crew")).stream()
+                .map(this::mapDocumentToCrew)
+                .collect(Collectors.toList())
+                : List.of(); // Retorna uma lista vazia se "crew" não estiver presente ou for nulo
+
+        StarshipInternalRecordFleet starship = doc.containsKey("starship") && doc.get("starship") != null
+                ? mapDocumentToStarship((Document) doc.get("starship"))
+                : null; // Retorna nulo se "starship" não estiver presente ou for nulo
 
         return new FleetRecord(
                 doc.getString("name"),
@@ -37,6 +55,7 @@ public class FleetMapper {
                 crew
         );
     }
+
 
     // Mapeia um CrewRecordFleet para um Document MongoDB
     private Document mapCrewToDocument(CrewRecordFleet crew) {
