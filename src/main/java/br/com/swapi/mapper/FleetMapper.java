@@ -23,21 +23,6 @@ public class FleetMapper {
                 .append("starship", starshipDoc);
     }
 
-    // Mapeia um Document do MongoDB para um FleetRecord
-//    public FleetRecord mapToFleetRecord(Document doc) {
-//        List<CrewRecordFleet> crew = ((List<Document>) doc.get("crew")).stream()
-//                .map(this::mapDocumentToCrew)
-//                .collect(Collectors.toList());
-//
-//        StarshipInternalRecordFleet starship = mapDocumentToStarship((Document) doc.get("starship"));
-//
-//        return new FleetRecord(
-//                doc.getString("name"),
-//                starship,
-//                crew
-//        );
-//    }
-
     public FleetRecord mapToFleetRecord(Document doc) {
         List<CrewRecordFleet> crew = doc.containsKey("crew") && doc.get("crew") != null
                 ? ((List<Document>) doc.get("crew")).stream()
