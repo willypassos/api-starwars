@@ -1,4 +1,4 @@
-package handler;
+package br.com.swapi.handler;
 
 import br.com.swapi.client.CrewHandler;
 import br.com.swapi.exception.GenericExceptionDTO;

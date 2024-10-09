@@ -1,4 +1,4 @@
-package handler;
+package br.com.swapi.handler;
 
 import br.com.swapi.client.StarshipHandler;
 import br.com.swapi.enums.HttpStatus;
@@ -51,7 +51,7 @@ class StarshipHandlerTest {
         Headers headers = new Headers();
         when(httpExchange.getResponseHeaders()).thenReturn(headers);
 
-        List<StarshipInternalRecordFleet> mockStarships = List.of(mock.Mock.getMockStarshipRecord());
+        List<StarshipInternalRecordFleet> mockStarships = List.of(br.com.swapi.mock.Mock.getMockStarshipRecord());
         when(swapiClient.getStarships(anyInt(), anyString())).thenReturn(mockStarships);
 
         OutputStream os = new ByteArrayOutputStream();

@@ -1,4 +1,4 @@
-package handler;
+package br.com.swapi.handler;
 
 import br.com.swapi.client.FleetHandler;
 import br.com.swapi.enums.HttpStatus;
@@ -61,8 +61,8 @@ public class FleetHandlerTest {
                 objectMapper.writeValueAsBytes(requestBody)));
 
         // Criar um mock de FleetRecord (resposta esperada)
-        var mockCrewRecordFleet = mock.Mock.getMockCrewRecordFleet();
-        var mockStarshipInternalRecordFleet = mock.Mock.getMockStarshipRecord();
+        var mockCrewRecordFleet = br.com.swapi.mock.Mock.getMockCrewRecordFleet();
+        var mockStarshipInternalRecordFleet = br.com.swapi.mock.Mock.getMockStarshipRecord();
         FleetRecord mockFleetRecord = new FleetRecord("Fleet1", mockStarshipInternalRecordFleet, mockCrewRecordFleet);
 
         // Simular o retorno do método postFleet do serviço, utilizando any() para evitar a comparação exata
@@ -134,8 +134,8 @@ public class FleetHandlerTest {
                 objectMapper.writeValueAsBytes(crewIds)));
 
         // Criar um mock de FleetRecord (resposta esperada)
-        var mockCrewRecordFleet = mock.Mock.getMockCrewRecordFleet();
-        var mockStarshipInternalRecordFleet = mock.Mock.getMockStarshipRecord();
+        var mockCrewRecordFleet = br.com.swapi.mock.Mock.getMockCrewRecordFleet();
+        var mockStarshipInternalRecordFleet = br.com.swapi.mock.Mock.getMockStarshipRecord();
         var updatedFleet = new FleetRecord("Fleet1", mockStarshipInternalRecordFleet, mockCrewRecordFleet);
 
         // Simular o retorno do serviço de updateFleet
@@ -246,8 +246,8 @@ public class FleetHandlerTest {
     @Test
     public void testHandleGetFleet_Success() throws Exception {
         // Utilizando os mocks da classe Mock
-        var mockCrewRecordFleet = mock.Mock.getMockCrewRecordFleet();
-        var mockStarshipInternalRecordFleet = mock.Mock.getMockStarshipRecord();
+        var mockCrewRecordFleet = br.com.swapi.mock.Mock.getMockCrewRecordFleet();
+        var mockStarshipInternalRecordFleet = br.com.swapi.mock.Mock.getMockStarshipRecord();
 
         // Simulando a URI e o método de requisição (GET)
         when(httpExchange.getRequestURI()).thenReturn(new URI("/starwars/v1/fleet?page=1"));

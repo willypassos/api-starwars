@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import redis.clients.jedis.Jedis;
 
 
@@ -58,8 +57,8 @@ class FleetServiceTest {
         FleetRecordRequestBody fleetRequest = new FleetRecordRequestBody("Fleet1", crewIds, 2);
 
         // Mock dos dados da tripulação e nave
-        List<CrewRecordFleet> mockCrew = mock.Mock.getMockCrewRecordFleet();
-        StarshipInternalRecordFleet mockStarship = mock.Mock.getMockStarshipRecord();
+        List<CrewRecordFleet> mockCrew = br.com.swapi.mock.Mock.getMockCrewRecordFleet();
+        StarshipInternalRecordFleet mockStarship = br.com.swapi.mock.Mock.getMockStarshipRecord();
         FleetRecord mockFleet = new FleetRecord("Fleet1", mockStarship, mockCrew);
 
         // Mock do comportamento dos serviços utilizados
@@ -139,8 +138,8 @@ class FleetServiceTest {
         // Mock da frota existente
         FleetRecord mockFleet = new FleetRecord(
                 fleetName,
-                mock.Mock.getMockStarshipRecord(),
-                mock.Mock.getMockCrewRecordFleet());
+                br.com.swapi.mock.Mock.getMockStarshipRecord(),
+                br.com.swapi.mock.Mock.getMockCrewRecordFleet());
 
         // Mockando o comportamento do repositório
         when(fleetRepository.findByName(fleetName)).thenReturn(mockFleet);
