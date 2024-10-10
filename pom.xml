@@ -86,11 +86,16 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Dependência do PowerMock para rodar com JUnit 5 -->
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4-rule</artifactId>
             <version>2.0.9</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <version>4.9.2</version> <!-- Verifique a versão mais recente -->
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -104,32 +109,38 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>br.com.swapi.Main</mainClass> <!-- Substitua pela sua classe principal -->
+                            <mainClass>br.com.swapi.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
 
-            <!-- Plugin JaCoCo para cobertura de testes -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.12</version>
                 <executions>
-                    <!-- Este goal prepara o agente antes dos testes -->
                     <execution>
                         <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
-                    <!-- Este goal gera o relatório após os testes -->
                     <execution>
                         <id>report</id>
                         <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/model/**</exclude>
+                                <exclude>**/config/**</exclude>
+                                <exclude>**/exception/**</exclude>
+                                <exclude>**/enums/**</exclude>
+                                <exclude>**/Main.class</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

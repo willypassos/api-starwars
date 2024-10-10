@@ -51,7 +51,7 @@ class StarshipHandlerTest {
         Headers headers = new Headers();
         when(httpExchange.getResponseHeaders()).thenReturn(headers);
 
-        List<StarshipInternalRecordFleet> mockStarships = List.of(br.com.swapi.mock.Mock.getMockStarshipRecord());
+        List<StarshipInternalRecordFleet> mockStarships = List.of(mocks.Mock.getMockStarshipRecord());
         when(swapiClient.getStarships(anyInt(), anyString())).thenReturn(mockStarships);
 
         OutputStream os = new ByteArrayOutputStream();

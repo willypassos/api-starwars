@@ -169,6 +169,68 @@ public class SWAPIClientTest {
 
         assertTrue(result.isEmpty(), "A lista deve estar vazia quando a resposta é null.");
     }
+    @Test
+    public void testFetchData_ValidUrl_Success() throws Exception {
+        // Simulando uma resposta de sucesso
+        String expectedResponse = "{\"name\":\"Teste\"}";
 
+        // Mock  URL
+        SWAPIClient mockClient = spy(new SWAPIClient());
+        URL mockUrl = new URL("https://teste/api/people/1/");
+        doReturn(mockUrl).when(mockClient).createUrl("/people/1/");
+
+        // Mockando a conexão HTTP e a resposta
+        HttpURLConnection mockConnection = mock(HttpURLConnection.class);
+        when(mockConnection.getResponseCode()).thenReturn(200);
+
+        // Simulando o input stream de resposta
+        InputStream inputStream = new ByteArrayInputStream(expectedResponse.getBytes());
+        when(mockConnection.getInputStream()).thenReturn(inputStream);
+
+        // Mockando a chamada de abertura de conexão
+        doReturn(mockConnection).when(mockClient).createUrlConnection(mockUrl);
+
+        // Chamando o método de produção
+        String result = mockClient.fetchData("/people/1/");
+
+        // Validando que o resultado foi o esperado
+        assertEquals(expectedResponse, result);
+    }
+    @Test
+    public void testCreateUrl() throws Exception {
+        // Chama o método createUrl e verifica se a URL está correta
+        String endpoint = "/people/1/";
+        URL expectedUrl = new URL("https://swapi.dev/api" + endpoint);  // URL esperada
+        URL resultUrl = swapiClient.createUrl(endpoint);  // Chama o método de produção
+
+        assertEquals(expectedUrl, resultUrl);  // Verifica se a URL gerada é a esperada
+    }
+
+    @Test
+    public void testCreateUrlConnection() throws Exception {
+        // Mockando uma URL
+        URL mockUrl = new URL("https://swapi.dev/api/people/1/");
+
+        // Chama o método createUrlConnection
+        HttpURLConnection resultConnection = swapiClient.createUrlConnection(mockUrl);
+
+        // Verifica se a conexão retornada não é nula
+        assertNotNull(resultConnection);
+        assertEquals("GET", resultConnection.getRequestMethod());  // Verifica se o método padrão é "GET"
+    }
+    @Test
+    public void testFetchData_ThrowsIOException_200Response() throws Exception {
+        // Simulando uma URL mockada
+        SWAPIClient mockClient = spy(new SWAPIClient());
+        URL mockUrl = new URL("https://swapi.dev/api/people/1/");
+        doReturn(mockUrl).when(mockClient).createUrl("/people/1/");
+
+        HttpURLConnection mockConnection = mock(HttpURLConnection.class);
+        when(mockConnection.getResponseCode()).thenReturn(404); // Retornando um código de erro
+
+        doReturn(mockConnection).when(mockClient).createUrlConnection(mockUrl);
+
+        assertThrows(IOException.class, () -> mockClient.fetchData("/people/1/"));
+    }
 
 }

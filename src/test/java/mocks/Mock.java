@@ -1,4 +1,4 @@
-package br.com.swapi.mock;
+package mocks;
 
 import br.com.swapi.model.CrewRecordFleet;
 import br.com.swapi.model.FleetRecord;

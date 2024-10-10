@@ -68,11 +68,21 @@ public class SWAPIClient {
         return starships;
     }
 
+    // Novo método para criar a URL
+    public URL createUrl(String endpoint) throws IOException {
+        return new URL(BASE_URL + endpoint);
+    }
+    // Método para criar conexão (pode ser mockado em testes)
+    public HttpURLConnection createUrlConnection(URL url) throws IOException {
+        return (HttpURLConnection) url.openConnection();
+    }
+
+
     // Método genérico para fazer requisições HTTP
+// Método genérico para fazer requisições HTTP
     public String fetchData(String endpoint) throws IOException {
-        String urlToCall = BASE_URL + endpoint;
-        URL url = new URL(urlToCall);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        URL url = createUrl(endpoint);  // Refatoração para usar createUrl
+        HttpURLConnection conn = createUrlConnection(url);  // Refatoração para usar createUrlConnection
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Accept", "application/json");
 
@@ -92,6 +102,7 @@ public class SWAPIClient {
             throw new IOException("Failed to connect to SWAPI: Response code " + responseCode);
         }
     }
+
 
     // Método auxiliar para mapear JSON para CrewRecordFleet
     CrewRecordFleet mapToCrewRecordFleet(JsonNode crewJson) {
