@@ -93,7 +93,6 @@ public class FleetService implements IFleetService {
 
         return fleet; // Retorna a frota
     }
-
     @Override
     public List<FleetRecord> getFleet(Integer page, String name) throws Exception {
         // Gera uma chave de cache baseada na página e no nome da frota

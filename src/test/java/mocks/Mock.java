@@ -14,7 +14,7 @@ public class Mock {
    // Método estático para retornar um mock de StarshipInternalRecordFleet
     public static StarshipInternalRecordFleet getMockStarshipRecord() {
         return new StarshipInternalRecordFleet(
-                "Millennium Falcon", // Nome da nave
+                "Teste", // Nome da nave
                 "YT-1300 light freighter", // Modelo
                 "100000", // Preço
                 "4", // Tripulação
