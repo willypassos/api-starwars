@@ -281,6 +281,28 @@ class FleetServiceTest {
         // Valida o resultado esperado
         assertEquals("fleet:page:null", cacheKey);
     }
+    @Test
+    public void testPostFleet_ThrowsException_WhenCrewNotFoundInExternalAPI() throws Exception {
+        // Preparação dos dados de entrada (IDs de tripulação fornecidos)
+        List<Integer> crewIds = List.of(1, 2, 3);
+        FleetRecordRequestBody fleetRequest = new FleetRecordRequestBody("Fleet1", crewIds, 2);
+
+        // Mock dos dados da tripulação (apenas um tripulante retornado pela API)
+        CrewRecordFleet mockCrew = new CrewRecordFleet("Luke", "172", "77", "male", 1, true);
+        when(swapiClient.getCrew(anyInt(), any())).thenReturn(List.of(mockCrew)); // Apenas 1 tripulante retornado
+
+        // Ação: chamada do método postFleet e verificação da exceção lançada
+        Exception exception = assertThrows(Exception.class, () -> {
+            fleetService.postFleet(fleetRequest);
+        });
+
+        // Verificações (Assertions)
+        assertEquals("Alguns membros da tripulação não foram encontrados na API externa.", exception.getMessage());
+
+        // Verifica se os métodos foram chamados corretamente
+        verify(swapiClient, times(1)).getCrew(anyInt(), any());
+    }
+
 
 
 }
