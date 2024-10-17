@@ -342,5 +342,64 @@ class FleetServiceTest {
         verify(fleetRepository, times(1)).findByName(fleetName);
         verify(swapiClient, times(1)).getCrew(anyInt(), any());
     }
+    @Test
+    void testValidateCrewSize_ThrowsException_WhenCrewSizeIsTooSmall() throws Exception {
+        // Simula uma frota existente no banco de dados
+        FleetRecord existingFleet = new FleetRecord("Fleet1", new StarshipInternalRecordFleet(), List.of());
+
+        // Mock para o repositório retornando a frota existente (evita o erro de frota não encontrada)
+        when(fleetRepository.findByName("Fleet1")).thenReturn(existingFleet);
+
+        // Simula uma tripulação menor que 1
+        List<CrewRecordFleet> smallCrew = Collections.emptyList(); // Nenhum membro na tripulação
+
+        // Mock para garantir que a tripulação seja a pequena
+        when(swapiClient.getCrew(anyInt(), any())).thenReturn(smallCrew);
+
+        // Verifica se a exceção é lançada ao tentar atualizar a frota com a tripulação mockada
+        Exception exception = assertThrows(Exception.class, () -> {
+            fleetService.updateFleet("Fleet1", List.of(1)); // Faz a chamada com IDs de tripulantes insuficientes
+        });
+
+        // Verifica a mensagem da exceção
+        assertEquals("Uma frota deve conter no mínimo 1 e no máximo 5 tripulantes.", exception.getMessage());
+
+        // Verifica se os mocks foram chamados corretamente
+        verify(swapiClient, times(1)).getCrew(anyInt(), any());
+    }
+
+    @Test
+    void testValidateCrewSize_ThrowsException_WhenCrewSizeIsTooLarge() throws Exception {
+        // Simula uma frota existente no banco de dados
+        FleetRecord existingFleet = new FleetRecord("Fleet1", new StarshipInternalRecordFleet(), List.of());
+
+        // Mock para o repositório retornando a frota existente
+        when(fleetRepository.findByName("Fleet1")).thenReturn(existingFleet);
+
+        // Simula uma tripulação maior que 5
+        List<CrewRecordFleet> largeCrew = List.of(
+                new CrewRecordFleet("Luke", "172", "77", "male", 1, true),
+                new CrewRecordFleet("Leia", "150", "49", "female", 2, true),
+                new CrewRecordFleet("Han", "180", "80", "male", 3, true),
+                new CrewRecordFleet("Chewbacca", "250", "112", "male", 4, true),
+                new CrewRecordFleet("R2D2", "96", "32", "robot", 5, true),
+                new CrewRecordFleet("C3PO", "167", "75", "robot", 6, true) // Excedendo o limite de 5 tripulantes
+        );
+
+        // Mock para garantir que a tripulação seja a grande
+        when(swapiClient.getCrew(anyInt(), any())).thenReturn(largeCrew);
+
+        // Verifica se a exceção é lançada ao tentar atualizar a frota com a tripulação mockada
+        Exception exception = assertThrows(Exception.class, () -> {
+            fleetService.updateFleet("Fleet1", List.of(1, 2, 3, 4, 5, 6)); // IDs de 6 tripulantes
+        });
+
+        // Verifica a mensagem da exceção
+        assertEquals("Uma frota deve conter no mínimo 1 e no máximo 5 tripulantes.", exception.getMessage());
+
+        // Verifica se os mocks foram chamados corretamente
+        verify(swapiClient, times(1)).getCrew(anyInt(), any());
+    }
+
 
 }
