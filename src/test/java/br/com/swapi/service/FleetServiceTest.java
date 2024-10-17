@@ -303,6 +303,44 @@ class FleetServiceTest {
         verify(swapiClient, times(1)).getCrew(anyInt(), any());
     }
 
+    @Test
+    void testUpdateFleet_ThrowsException_WhenCrewInUse() throws Exception {
+        String fleetName = "Fleet1";
+        List<Integer> crewIds = List.of(1, 2); // IDs da tripulação que será atualizada
 
+        // Mock para uma frota existente
+        FleetRecord existingFleet = new FleetRecord(fleetName, new StarshipInternalRecordFleet(), List.of());
+
+        // Mock para a tripulação que está em uso (por exemplo, membros 2 já estão em uso em outra frota)
+        List<CrewRecordFleet> mockCrew = List.of(
+                new CrewRecordFleet("Teste", "172", "77", "male", 1, true),
+                new CrewRecordFleet("OutroTeste", "150", "49", "female", 2, true)
+        );
+
+        // Mock para garantir que a frota é encontrada
+        when(fleetRepository.findByName(fleetName)).thenReturn(existingFleet);
+
+        // Mock para simular a tripulação obtida da API externa
+        when(swapiClient.getCrew(anyInt(), any())).thenReturn(mockCrew);
+
+        // Simula que a tripulação já está em uso em outra frota
+        when(fleetRepository.findAll()).thenReturn(List.of(
+                new FleetRecord("Fleet", new StarshipInternalRecordFleet(), List.of(
+                        new CrewRecordFleet("WP", "150", "49", "male", 2, true) // Tripulante 2 já está em uso
+                ))
+        ));
+
+        // Executa o método e espera a exceção
+        Exception exception = assertThrows(Exception.class, () -> {
+            fleetService.updateFleet(fleetName, crewIds);
+        });
+
+        // Verifica se a mensagem de exceção está correta
+        assertEquals("Os seguintes membros da tripulação já estão em uso: [2]", exception.getMessage());
+
+        // Verifica se os métodos foram chamados corretamente
+        verify(fleetRepository, times(1)).findByName(fleetName);
+        verify(swapiClient, times(1)).getCrew(anyInt(), any());
+    }
 
 }
