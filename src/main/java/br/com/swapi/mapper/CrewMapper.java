@@ -44,10 +44,8 @@ public class CrewMapper {
 
     // Verifica a disponibilidade de um personagem na base de tripulações.
     private boolean checkAvailability(int externalId) {
-        // Aqui você pode implementar a lógica para verificar na base de dados ou em um serviço
-        // se o tripulante com o externalId já está em uso.
-        // Exemplo: se o personagem não estiver alocado em nenhuma frota, retorna true (disponível).
-        return true;  // Placeholder para a lógica de verificação.
+    
+        return true; .
     }
 
     // Extrai o ID do personagem a partir da URL fornecida.
