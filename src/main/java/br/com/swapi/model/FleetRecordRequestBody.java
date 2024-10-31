@@ -5,12 +5,12 @@ import java.util.List;
 public class FleetRecordRequestBody {
     private String name;
     private List<Integer> crewIds;
-    private int starshipId;
+    private Integer starshipId;
 
     public FleetRecordRequestBody() {
     }
 
-    public FleetRecordRequestBody(String name, List<Integer> crewIds, int starshipId) {
+    public FleetRecordRequestBody(String name, List<Integer> crewIds, Integer starshipId) {
         this.name = name;
         this.crewIds = crewIds;
         this.starshipId = starshipId;

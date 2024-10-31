@@ -1,17 +1,15 @@
-package br.com.swapi.exceptions;
+package br.com.swapi.exception;
 
 public class GenericExceptionDTO {
     private String code;
     private String message;
-
-    // Construtores, Getters e Setters
-    public GenericExceptionDTO() {}
 
     public GenericExceptionDTO(String code, String message) {
         this.code = code;
         this.message = message;
     }
 
+    // Getters e Setters
     public String getCode() {
         return code;
     }
